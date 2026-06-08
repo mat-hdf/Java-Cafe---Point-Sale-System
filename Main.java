@@ -13,16 +13,25 @@ public class Main {
             JTabbedPane tabbedPane = new JTabbedPane();
 
             // Cria as telas de pedidos e inventário
-            OrderGUI orderScreen = new OrderGUI();
-            OrderLogic logic = new OrderLogic(orderScreen);
-            orderScreen.setController(logic);
-
             InventoryGUI inventoryScreen = new InventoryGUI();
             InventoryLogic invLogic = new InventoryLogic(inventoryScreen);
             inventoryScreen.setController(invLogic);
+
+            OrderGUI orderScreen = new OrderGUI();
+            OrderLogic logic = new OrderLogic(orderScreen, inventoryScreen);
+            orderScreen.setController(logic);
             
-            // Cria um painel temporário para a tela de relatórios de vendas
-            JPanel salesReportScreen = new JPanel();
+            // Cria as abas de relatórios de vendas
+            SalesReportGUI salesReportScreen = new SalesReportGUI();
+            SalesReportLogic salesReportLogic = new SalesReportLogic(salesReportScreen);
+            salesReportScreen.setController(salesReportLogic);
+
+            // Atualiza os relatórios automaticamente ao alternar para a aba correspondente
+            tabbedPane.addChangeListener(e -> {
+                if (tabbedPane.getSelectedIndex() == 2) {
+                    salesReportLogic.refresh();
+                }
+            });
 
             // Adiciona cada painel como uma aba diferente
             tabbedPane.addTab("Orders", orderScreen);

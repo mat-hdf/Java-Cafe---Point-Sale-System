@@ -18,6 +18,8 @@ public class Main {
             orderScreen.setController(logic);
 
             InventoryGUI inventoryScreen = new InventoryGUI();
+            InventoryLogic invLogic = new InventoryLogic(inventoryScreen);
+            inventoryScreen.setController(invLogic);
             
             // Cria um painel temporário para a tela de relatórios de vendas
             JPanel salesReportScreen = new JPanel();

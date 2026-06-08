@@ -83,36 +83,36 @@ public class InventoryGUI extends JPanel {
         inventoryTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                // Impede que o evento dispare duas vezes no mesmo clique
                 if (!e.getValueIsAdjusting()) { 
                     boolean rowSelected = inventoryTable.getSelectedRow() != -1;
                     
                     if (rowSelected) {
-                        // Puxa os dados da tabela para os campos de texto 
+                        // Puxa os dados apenas se uma linha for selecionada
                         int row = inventoryTable.getSelectedRow();
                         nameField.setText((String) tableModel.getValueAt(row, 0));
                         priceField.setText((String) tableModel.getValueAt(row, 1));
                         stockField.setText((String) tableModel.getValueAt(row, 2));
-                    } else {
-                        // Limpa os campos se nada estiver selecionado
-                        nameField.setText("");
-                        priceField.setText("");
-                        stockField.setText("");
                     }
 
                     // Atualiza a visibilidade dos botões com base na seleção
-                    addButton.setVisible(!rowSelected); // O botão de adicionar só aparece quando nenhuma linha está selecionada
+                    addButton.setVisible(!rowSelected); 
                     updateButton.setVisible(rowSelected);
                     deleteButton.setVisible(rowSelected);
-                    clearSelectionButton.setVisible(rowSelected);
-
+                    clearSelectionButton.setVisible(rowSelected); 
+                    
                     actionPanel.revalidate();
                     actionPanel.repaint();
                 }
             }
         });
 
-        clearSelectionButton.addActionListener(e -> inventoryTable.clearSelection()); // Limpa a seleção da tabela e os campos de texto
+        // Ação que limpa a seleção da tabela e os campos de texto
+        clearSelectionButton.addActionListener(e -> {
+            inventoryTable.clearSelection();
+            nameField.setText("");
+            priceField.setText("");
+            stockField.setText("");
+        });
 
         // Adiciona os botões ao painel de ação
         actionPanel.add(addButton);

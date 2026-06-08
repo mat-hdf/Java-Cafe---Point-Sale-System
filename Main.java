@@ -7,7 +7,7 @@ public class Main {
             // Cria a janela principal única do sistema
             JFrame mainFrame = new JFrame("Java Cafe - Management System");
             mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            mainFrame.setSize(800, 600);
+            mainFrame.setSize(1000, 800);
 
             // Cria o componente das abas
             JTabbedPane tabbedPane = new JTabbedPane();

@@ -14,6 +14,9 @@ public class Main {
 
             // Cria as telas de pedidos e inventário
             OrderGUI orderScreen = new OrderGUI();
+            OrderLogic logic = new OrderLogic(orderScreen);
+            orderScreen.setController(logic);
+
             InventoryGUI inventoryScreen = new InventoryGUI();
             
             // Cria um painel temporário para a tela de relatórios de vendas

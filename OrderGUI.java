@@ -114,6 +114,16 @@ public class OrderGUI extends JPanel
         orderPanel.add(finalizeOrder, BorderLayout.SOUTH);
         orderPanel.add(totalPanel, BorderLayout.NORTH);
         add(orderPanel, BorderLayout.EAST);
+
+        
+    }
+    
+    public void setController (OrderLogic logic) 
+    {
+        //adding listeners to all buttons
+        pie.addActionListener(logic);
+        cake.addActionListener(logic);
+        removeButton.addActionListener(logic);
     }
 
     private JPanel createItemWrapper(JButton button, String imagePath) 

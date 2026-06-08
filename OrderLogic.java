@@ -1,63 +1,130 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class OrderLogic implements ActionListener {
-    
-    private OrderGUI gui;
-    private double currentTotal = 0.0;
+import javax.swing.JOptionPane;
 
-    public OrderLogic(OrderGUI gui) {
+public class OrderLogic implements ActionListener 
+{
+    
+    private OrderGUI gui;   //receives GUI to access its public methods and components to update visual components
+    private double currentTotal = 0.0;  //updates total order value
+
+    public OrderLogic(OrderGUI gui) 
+    {
         this.gui = gui;
     }
 
-    // 2. Este método é obrigatório por causa do 'implements ActionListener'
     @Override
-    public void actionPerformed(ActionEvent e) {
-        // Pega o texto exato escrito no botão que foi clicado (ex: "Pie", "Cake")
-        String botaoClicado = e.getActionCommand(); 
+    public void actionPerformed(ActionEvent e) 
+    {
+        // actionCommand returns a string with the coponents action command, in this case, the buttons text on it
+        String button = e.getActionCommand(); 
 
-        // Descobre qual botão chamou a lógica e age de acordo
-        switch (botaoClicado) {
+        //from that, we can get which button was pressed and add that item to the order
+        switch (button) 
+        {
             case "Pie":
-                adicionarItem("Pie", 15.50);
+                addItem("Pie", 4.50);
                 break;
             case "Cake":
-                adicionarItem("Cake", 12.00);
+                addItem("Cake", 5.00);
                 break;
             case "Coffee":
-                adicionarItem("Coffee", 5.00);
+                addItem("Coffee", 2.50);
                 break;
-            // ... adicione os cases para Tea, Water, Capuccino
+            case "Tea":
+                addItem("Tea", 2.50);
+                break;
+            case "Water":
+                addItem("Water", 1.00);
+                break;
+            case "Capuccino":
+                addItem("Capuccino", 2.50);
+                break;
             case "Remove Item":
-                removerItem();
+                removeItem();
+                break;
+            case "Cancel Order":
+                cancelOrder();
+                break;
+            case "Place Order":
+                submitOrder();
                 break;
         }
     }
 
-    // --- Métodos Auxiliares que fazem o trabalho de verdade ---
-
-    private void adicionarItem(String nomeItem, double preco) {
-        // Adiciona a linha na tabela da GUI
-        gui.getTableModel().addRow(new Object[]{1, nomeItem, String.format("%.2f", preco)});
+    private void addItem(String item, double price)
+    {
+        //accesses table with order items and adds a new line with a list holding every information (qtt, name, price)
+        gui.getTableModel().addRow(new Object[]{1, item, String.format("%.2f", price)});   
         
-        // Atualiza a soma e o texto na tela
-        currentTotal += preco;
-        gui.getOrderValueLabel().setText(String.format("%.2f", currentTotal));
+        //adds price to current order total
+        currentTotal += price;
+        gui.getOrderValueLabel().setText(String.format("%.2f", currentTotal));  //sets new total to JLabel holding order value
     }
 
-    private void removerItem() {
-        int linhaSelecionada = gui.getOrderTable().getSelectedRow();
-        
-        if (linhaSelecionada != -1) { 
-            // Pega o valor, converte para número e subtrai
-            String precoStr = (String) gui.getTableModel().getValueAt(linhaSelecionada, 2);
-            double precoItem = Double.parseDouble(precoStr.replace(",", "."));
+    private void removeItem() 
+    {
+        int selection = gui.getOrderTable().getSelectedRow();   //gets the selected row on the order table
+        //selected through user click on mouse
+        //its returns are enumerated starting at 0
+        if (selection != -1) //if nothing is selected, returns -1
+        { 
+            //gets a string of the price by accessing the table
+            String priceStr = (String) gui.getTableModel().getValueAt(selection, 2);    
+            //getValueAt searches for the value at given row (selection) and column, in this case, price is the third
+
+            double itemPrice = Double.parseDouble(priceStr.replace(",", "."));  
+            //parses doubles and switches commas to prevent crashes on OS interaction
+
+            currentTotal -= itemPrice;  //subtracts removed item price from total
             
-            currentTotal -= precoItem;
-            gui.getOrderValueLabel().setText(String.format("%.2f", Math.max(0, currentTotal)));
+            if (currentTotal < 0) 
+            {
+                gui.getOrderValueLabel().setText(String.format("%.2f", 0.0)); //sets total to 0
+            }
+            else
+            {
+                gui.getOrderValueLabel().setText(String.format("%.2f", currentTotal)); //updates total
+            }
             
-            // Remove a linha da tabela
-            gui.getTableModel().removeRow(linhaSelecionada);
+            gui.getTableModel().removeRow(selection);   //removes that row from the table
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(gui, "Please click on an item to remove it", "No item selected", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void cancelOrder()
+    {
+        gui.getTableModel().setRowCount(0);  //nullifies all table rows
+
+        currentTotal = 0.0;
+
+        gui.getOrderValueLabel().setText(String.format("%.2f", currentTotal)); //updates total
+        gui.getObsTextArea().setText("");   //clears observations text
+    }
+
+    private void submitOrder()
+    {
+        if (gui.getTableModel().getRowCount() != 0) 
+        {
+            gui.getTableModel().setRowCount(0);  //nullifies all table rows
+    
+            currentTotal = 0.0;
+    
+            gui.getOrderValueLabel().setText(String.format("%.2f", currentTotal)); //resets total after order submission
+            
+            JOptionPane.showMessageDialog(gui, "Order submitted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            //creates a pop-up to let user know the order was a success
+            gui.getObsTextArea().setText("");   //clears observations text
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(gui, "Error! Order empty!", "Invalid Order", JOptionPane.ERROR_MESSAGE);
+            //pop-up with error message in case of empty order
+            gui.getObsTextArea().setText("");   //clears observations text
         }
     }
 }

@@ -123,7 +123,13 @@ public class OrderGUI extends JPanel
         //adding listeners to all buttons
         pie.addActionListener(logic);
         cake.addActionListener(logic);
+        coffee.addActionListener(logic);
+        tea.addActionListener(logic);
+        water.addActionListener(logic);
+        capuccino.addActionListener(logic);
         removeButton.addActionListener(logic);
+        cancelButton.addActionListener(logic);
+        orderButton.addActionListener(logic);
     }
 
     private JPanel createItemWrapper(JButton button, String imagePath) 
@@ -150,5 +156,26 @@ public class OrderGUI extends JPanel
         Image img = originalIcon.getImage();
         Image scaledImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH); //resizes it
         return new ImageIcon(scaledImg);    //returns adjusted img
+    }
+
+    //methods to grant access to elements that must be updated within OrderLogic
+    public DefaultTableModel getTableModel()
+    {
+        return tableModel;
+    }
+
+    public JTable getOrderTable()
+    {
+        return orderTable;
+    }
+
+    public JLabel getOrderValueLabel()
+    {
+        return orderValue;
+    }
+
+    public JTextArea getObsTextArea() 
+    { 
+        return obs; 
     }
 }

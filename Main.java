@@ -12,22 +12,23 @@ public class Main {
             // Cria o componente das abas
             JTabbedPane tabbedPane = new JTabbedPane();
 
-            // Cria as telas de pedidos e inventário
+            // Cria a tela de pedidos
             OrderGUI orderScreen = new OrderGUI();
             OrderLogic logic = new OrderLogic(orderScreen);
             orderScreen.setController(logic);
 
+            // Cria a tela de inventário
             InventoryGUI inventoryScreen = new InventoryGUI();
             InventoryLogic invLogic = new InventoryLogic(inventoryScreen);
             inventoryScreen.setController(invLogic);
             
-            // Cria um painel temporário para a tela de relatórios de vendas
-            JPanel salesReportScreen = new JPanel();
+            // Cria a tela de relatórios de vendas
+            ReportGUI reportScreen = new ReportGUI();
 
             // Adiciona cada painel como uma aba diferente
             tabbedPane.addTab("Orders", orderScreen);
             tabbedPane.addTab("Inventory", inventoryScreen);
-            tabbedPane.addTab("Sales Reports", salesReportScreen);
+            tabbedPane.addTab("Sales Reports", reportScreen);
 
             // Adiciona o painel de abas à janela principal
             mainFrame.add(tabbedPane);

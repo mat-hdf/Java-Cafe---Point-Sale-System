@@ -5,6 +5,10 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
+/**
+ * Controller class handling the business logic for the order screen.
+ * Processes item additions, removals, cancellations, and checkout submissions.
+ */
 public class OrderLogic implements ActionListener 
 {
     
@@ -12,16 +16,31 @@ public class OrderLogic implements ActionListener
     private double currentTotal = 0.0;  //updates total order value
     private SalesReportLogic reportLogic;
 
+    /**
+     * Constructs a new OrderLogic controller linked to an OrderGUI window.
+     *
+     * @param gui the OrderGUI instance to control
+     */
     public OrderLogic(OrderGUI gui) 
     {
         this.gui = gui;
     }
 
+    /**
+     * Sets the SalesReportLogic controller to update reports on order submission.
+     *
+     * @param reportLogic the SalesReportLogic controller instance
+     */
     public void setReportLogic(SalesReportLogic reportLogic) 
     {
         this.reportLogic = reportLogic;
     }
 
+    /**
+     * Listens for action events triggered from GUI item buttons or sidebar controls.
+     *
+     * @param e the action event
+     */
     @Override
     public void actionPerformed(ActionEvent e) 
     {
@@ -61,6 +80,12 @@ public class OrderLogic implements ActionListener
         }
     }
 
+    /**
+     * Adds an item with a given price to the current order and updates the total.
+     *
+     * @param item  the item name
+     * @param price the item unit price
+     */
     private void addItem(String item, double price)
     {
         //accesses table with order items and adds a new line with a list holding every information (qtt, name, price)
@@ -71,6 +96,9 @@ public class OrderLogic implements ActionListener
         gui.getOrderValueLabel().setText(String.format("%.2f", currentTotal));  //sets new total to JLabel holding order value
     }
 
+    /**
+     * Removes the currently selected item from the order table and updates the total.
+     */
     private void removeItem() 
     {
         int selection = gui.getOrderTable().getSelectedRow();   //gets the selected row on the order table
@@ -104,6 +132,9 @@ public class OrderLogic implements ActionListener
         }
     }
 
+    /**
+     * Cancels the current order, clearing all items and resetting the total to 0.
+     */
     private void cancelOrder()
     {
         gui.getTableModel().setRowCount(0);  //nullifies all table rows
@@ -114,6 +145,9 @@ public class OrderLogic implements ActionListener
         gui.getObsTextArea().setText("");   //clears observations text
     }
 
+    /**
+     * Submits the current order, saving it to persistence and updating the sales reports.
+     */
     private void submitOrder()
     {
         if (gui.getTableModel().getRowCount() != 0) 

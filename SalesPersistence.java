@@ -3,41 +3,100 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+/**
+ * Handles persistence for the sales system, including loading and saving
+ * sales transactions to a CSV file.
+ */
 public class SalesPersistence {
     private static final String FILE_PATH = "sales.csv";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    // Classe que representa um item vendido
+    /**
+     * Represents an item that was sold, containing its name, quantity, and unit price.
+     */
     public static class SaleItem {
         private String name;
         private int quantity;
         private double price;
 
+        /**
+         * Constructs a new SaleItem.
+         *
+         * @param name     the name of the item
+         * @param quantity the quantity sold
+         * @param price    the unit price
+         */
         public SaleItem(String name, int quantity, double price) {
             this.name = name;
             this.quantity = quantity;
             this.price = price;
         }
 
+        /**
+         * Gets the item name.
+         *
+         * @return the item name
+         */
         public String getName() { return name; }
+
+        /**
+         * Gets the quantity sold.
+         *
+         * @return the quantity
+         */
         public int getQuantity() { return quantity; }
+
+        /**
+         * Gets the unit price.
+         *
+         * @return the price
+         */
         public double getPrice() { return price; }
     }
 
-    // Classe que representa uma transacao completa
+    /**
+     * Represents a complete sale transaction, containing a timestamp and the list of items sold.
+     */
     public static class SaleTransaction {
         private LocalDateTime timestamp;
         private List<SaleItem> items;
 
+        /**
+         * Constructs a new SaleTransaction.
+         *
+         * @param timestamp the date and time of the transaction
+         */
         public SaleTransaction(LocalDateTime timestamp) {
             this.timestamp = timestamp;
             this.items = new ArrayList<>();
         }
 
+        /**
+         * Gets the transaction timestamp.
+         *
+         * @return the timestamp
+         */
         public LocalDateTime getTimestamp() { return timestamp; }
+
+        /**
+         * Gets the list of items in this transaction.
+         *
+         * @return the list of sale items
+         */
         public List<SaleItem> getItems() { return items; }
+
+        /**
+         * Adds an item to the transaction.
+         *
+         * @param item the sale item to add
+         */
         public void addItem(SaleItem item) { items.add(item); }
 
+        /**
+         * Calculates the total price of all items in this transaction.
+         *
+         * @return the total transaction value
+         */
         public double getTotal() {
             double total = 0;
             for (SaleItem item : items) {
@@ -47,7 +106,12 @@ public class SalesPersistence {
         }
     }
 
-    // Carrega todas as vendas do arquivo CSV
+    /**
+     * Loads all sale transactions from the CSV file.
+     * Generates mock data if the file does not exist.
+     *
+     * @return a list of loaded SaleTransactions
+     */
     public static List<SaleTransaction> loadSales() {
         List<SaleTransaction> transactions = new ArrayList<>();
         File file = new File(FILE_PATH);
@@ -80,7 +144,11 @@ public class SalesPersistence {
         return new ArrayList<>(transactionMap.values());
     }
 
-    // Salva uma nova venda no arquivo CSV
+    /**
+     * Appends a new sale transaction to the CSV file.
+     *
+     * @param items the list of items sold in the transaction
+     */
     public static void saveSale(List<SaleItem> items) {
         if (items == null || items.isEmpty()) return;
 
@@ -105,7 +173,9 @@ public class SalesPersistence {
         }
     }
 
-    // Gera dados ficticios se o arquivo nao existir
+    /**
+     * Generates mock sales data and writes it to a new CSV file.
+     */
     private static void generateMockData() {
         File file = new File(FILE_PATH);
         try (PrintWriter pw = new PrintWriter(new FileWriter(file))) {

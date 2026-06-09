@@ -2,6 +2,10 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+/**
+ * Graphical User Interface for placing orders at Java Cafe.
+ * Contains the menu layout with buttons for items and the sidebar listing order details.
+ */
 public class OrderGUI extends JPanel
 {
     //component declarations
@@ -14,6 +18,9 @@ public class OrderGUI extends JPanel
     private JLabel orderTotal, orderValue, obsLabel, welcomeLabel, text;
     private JTextArea obs;
 
+    /**
+     * Constructs a new OrderGUI layout, setting up panels, menus, and buttons.
+     */
     public OrderGUI()
     {
         // window settings
@@ -118,6 +125,11 @@ public class OrderGUI extends JPanel
         
     }
     
+    /**
+     * Sets the controller logic for handling order-related button clicks.
+     *
+     * @param logic the OrderLogic controller instance
+     */
     public void setController (OrderLogic logic) 
     {
         //adding listeners to all buttons
@@ -132,6 +144,13 @@ public class OrderGUI extends JPanel
         orderButton.addActionListener(logic);
     }
 
+    /**
+     * Wraps a button with its corresponding resized item icon.
+     *
+     * @param button    the action button to wrap
+     * @param imagePath the filesystem path to the icon image
+     * @return the wrapped JPanel containing icon and button
+     */
     private JPanel createItemWrapper(JButton button, String imagePath) 
     {
 
@@ -149,6 +168,14 @@ public class OrderGUI extends JPanel
         return wrapperPanel;
     }
 
+    /**
+     * Resizes an image file to the target width and height to use as an icon.
+     *
+     * @param path   the image file path
+     * @param width  the target width
+     * @param height the target height
+     * @return a resized ImageIcon
+     */
     private ImageIcon createResizedIcon(String path, int width, int height) //auxiliar method, receives img path and preferred size
     {
         ImageIcon originalIcon = new ImageIcon(path);
@@ -158,22 +185,41 @@ public class OrderGUI extends JPanel
         return new ImageIcon(scaledImg);    //returns adjusted img
     }
 
-    //methods to grant access to elements that must be updated within OrderLogic
+    /**
+     * Gets the table model listing order items.
+     *
+     * @return the JTable's DefaultTableModel
+     */
     public DefaultTableModel getTableModel()
     {
         return tableModel;
     }
 
+    /**
+     * Gets the JTable representing the order items.
+     *
+     * @return the order JTable
+     */
     public JTable getOrderTable()
     {
         return orderTable;
     }
 
+    /**
+     * Gets the label displaying the current order total value.
+     *
+     * @return the Jlabel representing the total order value
+     */
     public JLabel getOrderValueLabel()
     {
         return orderValue;
     }
 
+    /**
+     * Gets the observation text area.
+     *
+     * @return the observation JTextArea
+     */
     public JTextArea getObsTextArea() 
     { 
         return obs; 

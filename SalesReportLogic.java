@@ -9,6 +9,10 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import javax.swing.*;
 
+/**
+ * Controller class for the Sales Report Dashboard.
+ * Handles loading transactions, filtering by period, calculating best sellers, and exporting summaries.
+ */
 public class SalesReportLogic implements ActionListener {
     private SalesReportGUI gui;
     private List<SalesPersistence.SaleTransaction> allTransactions;
@@ -16,18 +20,27 @@ public class SalesReportLogic implements ActionListener {
     private List<Map.Entry<String, Integer>> topItems;
     private double totalRevenue;
 
+    /**
+     * Constructs a new SalesReportLogic controller linked to a SalesReportGUI dashboard.
+     *
+     * @param gui the SalesReportGUI dashboard instance
+     */
     public SalesReportLogic(SalesReportGUI gui) {
         this.gui = gui;
         refresh();
     }
 
-    // Carrega dados e atualiza o relatorio
+    /**
+     * Reloads sales data from the persistence layer and updates the dashboard.
+     */
     public void refresh() {
         allTransactions = SalesPersistence.loadSales();
         updateReport();
     }
 
-    // Calcula as metricas com base no periodo selecionado
+    /**
+     * Re-calculates and updates all metrics on the dashboard based on the selected period.
+     */
     private void updateReport() {
         String selectedPeriod = (String) gui.getPeriodComboBox().getSelectedItem();
         filteredTransactions = filterTransactions(allTransactions, selectedPeriod);
@@ -47,7 +60,13 @@ public class SalesReportLogic implements ActionListener {
         gui.setTopItems(topItems);
     }
 
-    // Filtra as transacoes por data
+    /**
+     * Filters a list of sales transactions by a selected period name.
+     *
+     * @param all    the list of all transactions
+     * @param period the period name ("Today", "Current Week", or "Current Month")
+     * @return the filtered list of transactions
+     */
     private List<SalesPersistence.SaleTransaction> filterTransactions(List<SalesPersistence.SaleTransaction> all, String period) {
         List<SalesPersistence.SaleTransaction> filtered = new ArrayList<>();
         LocalDate today = LocalDate.now();
@@ -77,7 +96,12 @@ public class SalesReportLogic implements ActionListener {
         return filtered;
     }
 
-    // Agrupa e ordena os itens por quantidade vendida
+    /**
+     * Groups and calculates the top best-selling items from a list of transactions.
+     *
+     * @param transactions list of transactions
+     * @return list of best sellers sorted by total quantity sold, capped at 3 items
+     */
     private List<Map.Entry<String, Integer>> calculateTopItems(List<SalesPersistence.SaleTransaction> transactions) {
         Map<String, Integer> counts = new HashMap<>();
         for (SalesPersistence.SaleTransaction tx : transactions) {
@@ -95,7 +119,11 @@ public class SalesReportLogic implements ActionListener {
         return sorted;
     }
 
-    // Executa acoes de acordo com cliques nos botoes ou selecoes
+    /**
+     * Listens for action events triggered from GUI control buttons or JComboBox filters.
+     *
+     * @param e the action event
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == gui.getPeriodComboBox()) {
@@ -108,7 +136,9 @@ public class SalesReportLogic implements ActionListener {
         }
     }
 
-    // Exporta o relatorio atual para TXT ou CSV
+    /**
+     * Exports the current dashboard report overview to a text or CSV file.
+     */
     private void exportReport() {
         if (filteredTransactions == null) return;
 

@@ -1,6 +1,16 @@
 import javax.swing.*;
 
+/**
+ * The entry point of the Java Cafe Management System application.
+ * Initializes and wires together the Order, Inventory, and Sales Report dashboards
+ * inside a single tabbed main window.
+ */
 public class Main {
+    /**
+     * Main method to launch the Swing application.
+     *
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         
         SwingUtilities.invokeLater(() -> {

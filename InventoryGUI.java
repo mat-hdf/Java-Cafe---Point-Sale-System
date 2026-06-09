@@ -4,6 +4,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener; 
 import javax.swing.table.DefaultTableModel;    
 
+/**
+ * Graphical User Interface for managing the product inventory.
+ * Provides controls to add, update, delete, and check low stock of items.
+ */
 public class InventoryGUI extends JPanel {
     
     // Declaração dos componentes
@@ -18,6 +22,9 @@ public class InventoryGUI extends JPanel {
     private JSpinner thresholdSpinner; 
     private JButton clearSelectionButton;
 
+    /**
+     * Constructs a new InventoryGUI layout, setting up the table with sample data and action forms.
+     */
     public InventoryGUI() {
         // Configurações da janela
         setLayout(new BorderLayout(10,10));
@@ -131,7 +138,11 @@ public class InventoryGUI extends JPanel {
         add(mainBottomPanel, BorderLayout.SOUTH);
     }
 
-    // Método para conectar os botões à classe de lógica
+    /**
+     * Connects the controller logic to handle inventory update events.
+     *
+     * @param logic the InventoryLogic controller instance
+     */
     public void setController(InventoryLogic logic) {
         addButton.addActionListener(logic);
         clearSelectionButton.addActionListener(logic);
@@ -140,11 +151,45 @@ public class InventoryGUI extends JPanel {
         checkStockButton.addActionListener(logic);
     }
 
-    // Métodos de acesso para a classe lógica interagir com a GUI
+    /**
+     * Gets the JTable representing the inventory.
+     *
+     * @return the inventory JTable
+     */
     public JTable getInventoryTable() { return inventoryTable; }
+
+    /**
+     * Gets the table model listing product inventory details.
+     *
+     * @return the table's DefaultTableModel
+     */
     public DefaultTableModel getTableModel() { return tableModel; }
+
+    /**
+     * Gets the product name input text field.
+     *
+     * @return the name JTextField
+     */
     public JTextField getNameField() { return nameField; }
+
+    /**
+     * Gets the product price input text field.
+     *
+     * @return the price JTextField
+     */
     public JTextField getPriceField() { return priceField; }
+
+    /**
+     * Gets the stock quantity input text field.
+     *
+     * @return the stock JTextField
+     */
     public JTextField getStockField() { return stockField; }
+
+    /**
+     * Gets the low-stock threshold selector spinner.
+     *
+     * @return the threshold JSpinner
+     */
     public JSpinner getThresholdSpinner() { return thresholdSpinner; }
 }

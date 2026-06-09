@@ -3,14 +3,28 @@ import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
+/**
+ * Controller class managing the business logic for product inventory.
+ * Handles adding, updating, deleting products, and low stock threshold checks.
+ */
 public class InventoryLogic implements ActionListener {
     // GUI para acessar os componentes e atualizar a interface
     private InventoryGUI gui;
 
+    /**
+     * Constructs an InventoryLogic controller linked to an InventoryGUI.
+     *
+     * @param gui the InventoryGUI instance to control
+     */
     public InventoryLogic(InventoryGUI gui) {
         this.gui = gui;
     }
 
+    /**
+     * Listens for action events triggered from form action buttons.
+     *
+     * @param e the action event
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         String botaoClicado = e.getActionCommand();
@@ -34,6 +48,9 @@ public class InventoryLogic implements ActionListener {
 
     // Métodos de Ação
 
+    /**
+     * Extracts values from input fields and adds a new product row to the inventory table.
+     */
     private void addProduct() {
         String name = gui.getNameField().getText();
         String priceStr = gui.getPriceField().getText();
@@ -64,6 +81,9 @@ public class InventoryLogic implements ActionListener {
         }
     }
 
+    /**
+     * Updates details of the currently selected product in the inventory table.
+     */
     private void updateProduct() {
         int selectedRow = gui.getInventoryTable().getSelectedRow();
         
@@ -101,6 +121,9 @@ public class InventoryLogic implements ActionListener {
         }
     }
 
+    /**
+     * Deletes the currently selected product row from the inventory table after confirmation.
+     */
     private void deleteProduct() {
         int selectedRow = gui.getInventoryTable().getSelectedRow();
         
@@ -115,6 +138,9 @@ public class InventoryLogic implements ActionListener {
         }
     }
 
+    /**
+     * Checks all products against the threshold selection and displays items with stock levels below it.
+     */
     private void checkLowStock() {
         DefaultTableModel model = gui.getTableModel();
         boolean hasLowStock = false;

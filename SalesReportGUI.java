@@ -4,6 +4,10 @@ import javax.swing.border.EmptyBorder;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Graphical User Interface for the Sales Dashboard.
+ * Displays key metrics like total revenue, transactions count, and the top-3 best selling items.
+ */
 public class SalesReportGUI extends JPanel {
     private JComboBox<String> periodComboBox;
     private JButton refreshButton;
@@ -13,6 +17,9 @@ public class SalesReportGUI extends JPanel {
     private JLabel transactionsValueLabel;
     private JLabel[] topItemLabels;
 
+    /**
+     * Constructs a new SalesReportGUI dashboard with metric cards and action buttons.
+     */
     public SalesReportGUI() {
         // Configura o layout principal com margens externas
         setLayout(new BorderLayout(15, 15));
@@ -100,7 +107,13 @@ public class SalesReportGUI extends JPanel {
         add(cardsPanel, BorderLayout.CENTER);
     }
 
-    // Metodo auxiliar para criar cards visuais modernos
+    /**
+     * Helper method to create a modern looking visual metric card.
+     *
+     * @param title       the title of the metric
+     * @param accentColor the accent border color of the card
+     * @return the styled JPanel card
+     */
     private JPanel createMetricCard(String title, Color accentColor) {
         JPanel card = new JPanel(new BorderLayout(10, 10));
         card.setBackground(Color.WHITE);
@@ -121,23 +134,47 @@ public class SalesReportGUI extends JPanel {
         return card;
     }
 
-    // Conecta o controller aos componentes
+    /**
+     * Connects the controller logic to handle interaction events.
+     *
+     * @param logic the controller instance
+     */
     public void setController(SalesReportLogic logic) {
         periodComboBox.addActionListener(logic);
         refreshButton.addActionListener(logic);
         exportButton.addActionListener(logic);
     }
 
+    /**
+     * Gets the period selection JComboBox.
+     *
+     * @return the JComboBox selector
+     */
     public JComboBox<String> getPeriodComboBox() { return periodComboBox; }
     
+    /**
+     * Sets the displayed total revenue amount.
+     *
+     * @param revenue the total revenue to display
+     */
     public void setRevenue(double revenue) {
         revenueValueLabel.setText(String.format("$ %.2f", revenue));
     }
     
+    /**
+     * Sets the displayed transaction count.
+     *
+     * @param count the number of transactions to display
+     */
     public void setTransactions(int count) {
         transactionsValueLabel.setText(String.valueOf(count));
     }
     
+    /**
+     * Sets the top-3 best selling items to display in the list.
+     *
+     * @param topItems list of map entries representing item names and sales quantity
+     */
     public void setTopItems(List<Map.Entry<String, Integer>> topItems) {
         for (int i = 0; i < 3; i++) {
             if (i < topItems.size()) {

@@ -1,17 +1,25 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 public class OrderLogic implements ActionListener 
 {
     
     private OrderGUI gui;   //receives GUI to access its public methods and components to update visual components
     private double currentTotal = 0.0;  //updates total order value
+    private SalesReportLogic reportLogic;
 
     public OrderLogic(OrderGUI gui) 
     {
         this.gui = gui;
+    }
+
+    public void setReportLogic(SalesReportLogic reportLogic) 
+    {
+        this.reportLogic = reportLogic;
     }
 
     @Override
@@ -110,6 +118,24 @@ public class OrderLogic implements ActionListener
     {
         if (gui.getTableModel().getRowCount() != 0) 
         {
+            List<SalesPersistence.SaleItem> items = new ArrayList<>();
+            DefaultTableModel model = gui.getTableModel();
+            for (int i = 0; i < model.getRowCount(); i++) 
+            {
+                Object qtyObj = model.getValueAt(i, 0);
+                int qty = (qtyObj instanceof Number) ? ((Number) qtyObj).intValue() : Integer.parseInt(qtyObj.toString());
+                String name = (String) model.getValueAt(i, 1);
+                String priceStr = model.getValueAt(i, 2).toString();
+                double price = Double.parseDouble(priceStr.replace(",", "."));
+                items.add(new SalesPersistence.SaleItem(name, qty, price));
+            }
+            SalesPersistence.saveSale(items);
+
+            if (reportLogic != null) 
+            {
+                reportLogic.refresh();
+            }
+
             gui.getTableModel().setRowCount(0);  //nullifies all table rows
     
             currentTotal = 0.0;

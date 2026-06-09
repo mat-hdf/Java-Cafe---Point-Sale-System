@@ -23,7 +23,10 @@ public class Main {
             inventoryScreen.setController(invLogic);
             
             // Cria a tela de relatórios de vendas
-            ReportGUI reportScreen = new ReportGUI();
+            SalesReportGUI reportScreen = new SalesReportGUI();
+            SalesReportLogic reportLogic = new SalesReportLogic(reportScreen);
+            reportScreen.setController(reportLogic);
+            logic.setReportLogic(reportLogic);
 
             // Adiciona cada painel como uma aba diferente
             tabbedPane.addTab("Orders", orderScreen);

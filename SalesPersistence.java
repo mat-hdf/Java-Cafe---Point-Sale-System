@@ -26,17 +26,14 @@ public class SalesPersistence {
 
     // Classe que representa uma transacao completa
     public static class SaleTransaction {
-        private String id;
         private LocalDateTime timestamp;
         private List<SaleItem> items;
 
-        public SaleTransaction(String id, LocalDateTime timestamp) {
-            this.id = id;
+        public SaleTransaction(LocalDateTime timestamp) {
             this.timestamp = timestamp;
             this.items = new ArrayList<>();
         }
 
-        public String getId() { return id; }
         public LocalDateTime getTimestamp() { return timestamp; }
         public List<SaleItem> getItems() { return items; }
         public void addItem(SaleItem item) { items.add(item); }
@@ -59,22 +56,21 @@ public class SalesPersistence {
             generateMockData();
         }
 
-        Map<String, SaleTransaction> transactionMap = new LinkedHashMap<>();
+        Map<LocalDateTime, SaleTransaction> transactionMap = new LinkedHashMap<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             br.readLine(); // Pula o cabecalho
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
-                if (parts.length < 5) continue;
+                if (parts.length < 4) continue;
 
-                String id = parts[0];
-                LocalDateTime timestamp = LocalDateTime.parse(parts[1], FORMATTER);
-                String name = parts[2];
-                int quantity = Integer.parseInt(parts[3]);
-                double price = Double.parseDouble(parts[4]);
+                LocalDateTime timestamp = LocalDateTime.parse(parts[0], FORMATTER);
+                String name = parts[1];
+                int quantity = Integer.parseInt(parts[2]);
+                double price = Double.parseDouble(parts[3]);
 
-                SaleTransaction tx = transactionMap.computeIfAbsent(id, k -> new SaleTransaction(k, timestamp));
+                SaleTransaction tx = transactionMap.computeIfAbsent(timestamp, k -> new SaleTransaction(k));
                 tx.addItem(new SaleItem(name, quantity, price));
             }
         } catch (Exception e) {
@@ -88,18 +84,16 @@ public class SalesPersistence {
     public static void saveSale(List<SaleItem> items) {
         if (items == null || items.isEmpty()) return;
 
-        String id = UUID.randomUUID().toString();
         LocalDateTime timestamp = LocalDateTime.now();
         File file = new File(FILE_PATH);
         boolean writeHeader = !file.exists();
 
         try (PrintWriter pw = new PrintWriter(new FileWriter(file, true))) {
             if (writeHeader) {
-                pw.println("transaction_id,timestamp,item_name,quantity,price");
+                pw.println("timestamp,item_name,quantity,price");
             }
             for (SaleItem item : items) {
-                pw.printf("%s,%s,%s,%d,%.2f\n",
-                    id,
+                pw.printf("%s,%s,%d,%.2f\n",
                     timestamp.format(FORMATTER),
                     item.getName().replace(",", " "),
                     item.getQuantity(),
@@ -115,26 +109,23 @@ public class SalesPersistence {
     private static void generateMockData() {
         File file = new File(FILE_PATH);
         try (PrintWriter pw = new PrintWriter(new FileWriter(file))) {
-            pw.println("transaction_id,timestamp,item_name,quantity,price");
+            pw.println("timestamp,item_name,quantity,price");
 
             LocalDateTime now = LocalDateTime.now();
-            String id1 = UUID.randomUUID().toString();
-            String id2 = UUID.randomUUID().toString();
-            String id3 = UUID.randomUUID().toString();
 
             // Venda 1: Hoje
-            pw.printf("%s,%s,%s,%d,%.2f\n", id1, now.format(FORMATTER), "Coffee", 2, 5.00);
-            pw.printf("%s,%s,%s,%d,%.2f\n", id1, now.format(FORMATTER), "Pie", 1, 15.50);
+            pw.printf("%s,%s,%d,%.2f\n", now.format(FORMATTER), "Coffee", 2, 5.00);
+            pw.printf("%s,%s,%d,%.2f\n", now.format(FORMATTER), "Pie", 1, 15.50);
 
             // Venda 2: 2 dias atras (Semana atual e Mes atual)
             LocalDateTime twoDaysAgo = now.minusDays(2);
-            pw.printf("%s,%s,%s,%d,%.2f\n", id2, twoDaysAgo.format(FORMATTER), "Cake", 1, 12.00);
-            pw.printf("%s,%s,%s,%d,%.2f\n", id2, twoDaysAgo.format(FORMATTER), "Coffee", 1, 5.00);
+            pw.printf("%s,%s,%d,%.2f\n", twoDaysAgo.format(FORMATTER), "Cake", 1, 12.00);
+            pw.printf("%s,%s,%d,%.2f\n", twoDaysAgo.format(FORMATTER), "Coffee", 1, 5.00);
 
             // Venda 3: 10 dias atras (Apenas Mes atual)
             LocalDateTime tenDaysAgo = now.minusDays(10);
-            pw.printf("%s,%s,%s,%d,%.2f\n", id3, tenDaysAgo.format(FORMATTER), "Capuccino", 3, 6.00);
-            pw.printf("%s,%s,%s,%d,%.2f\n", id3, tenDaysAgo.format(FORMATTER), "Pie", 2, 15.50);
+            pw.printf("%s,%s,%d,%.2f\n", tenDaysAgo.format(FORMATTER), "Capuccino", 3, 6.00);
+            pw.printf("%s,%s,%d,%.2f\n", tenDaysAgo.format(FORMATTER), "Pie", 2, 15.50);
 
         } catch (IOException e) {
             e.printStackTrace();

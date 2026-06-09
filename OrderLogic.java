@@ -14,7 +14,7 @@ public class OrderLogic implements ActionListener
     
     private OrderGUI gui;   //receives GUI to access its public methods and components to update visual components
     private double currentTotal = 0.0;  //updates total order value
-    private SalesReportLogic reportLogic;
+    private SalesReportGUI reportScreen;
 
     /**
      * Constructs a new OrderLogic controller linked to an OrderGUI window.
@@ -27,13 +27,13 @@ public class OrderLogic implements ActionListener
     }
 
     /**
-     * Sets the SalesReportLogic controller to update reports on order submission.
+     * Sets the SalesReportGUI screen to update reports on order submission.
      *
-     * @param reportLogic the SalesReportLogic controller instance
+     * @param reportScreen the SalesReportGUI screen instance
      */
-    public void setReportLogic(SalesReportLogic reportLogic) 
+    public void setReportScreen(SalesReportGUI reportScreen) 
     {
-        this.reportLogic = reportLogic;
+        this.reportScreen = reportScreen;
     }
 
     /**
@@ -165,9 +165,9 @@ public class OrderLogic implements ActionListener
             }
             SalesPersistence.saveSale(items);
 
-            if (reportLogic != null) 
+            if (reportScreen != null) 
             {
-                reportLogic.refresh();
+                reportScreen.refresh();
             }
 
             gui.getTableModel().setRowCount(0);  //nullifies all table rows

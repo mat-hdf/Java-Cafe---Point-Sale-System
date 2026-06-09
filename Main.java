@@ -34,9 +34,7 @@ public class Main {
             
             // Cria a tela de relatórios de vendas
             SalesReportGUI reportScreen = new SalesReportGUI();
-            SalesReportLogic reportLogic = new SalesReportLogic(reportScreen);
-            reportScreen.setController(reportLogic);
-            logic.setReportLogic(reportLogic);
+            logic.setReportScreen(reportScreen);
 
             // Adiciona cada painel como uma aba diferente
             tabbedPane.addTab("Orders", orderScreen);

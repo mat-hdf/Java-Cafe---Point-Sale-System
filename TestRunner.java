@@ -9,7 +9,7 @@ import javax.swing.table.DefaultTableModel;
 
 /**
  * Custom zero-dependency test runner to run unit tests on SalesPersistence,
- * SalesReportLogic, OrderLogic, and InventoryLogic.
+ * SalesReportGUI, OrderLogic, and InventoryLogic.
  */
 public class TestRunner {
 
@@ -36,7 +36,7 @@ public class TestRunner {
         try {
             // Run test suites
             runTest("SalesPersistence Save and Load", TestRunner::testSalesPersistence);
-            runTest("SalesReportLogic Filtering and Metrics", TestRunner::testSalesReportLogic);
+            runTest("SalesReportGUI Filtering and Metrics", TestRunner::testSalesReportGUI);
             runTest("OrderLogic Item Management", TestRunner::testOrderLogic);
             runTest("InventoryLogic Operations", TestRunner::testInventoryLogic);
 
@@ -103,7 +103,7 @@ public class TestRunner {
         assertEqual(2.50, tx.getItems().get(0).getPrice(), "First item price matches");
     }
 
-    private static void testSalesReportLogic() throws Exception {
+    private static void testSalesReportGUI() throws Exception {
         // Setup initial CSV with known historical values
         File salesFile = new File("sales.csv");
         if (salesFile.exists()) {
@@ -117,8 +117,6 @@ public class TestRunner {
 
         // Instantiate components
         SalesReportGUI gui = new SalesReportGUI();
-        SalesReportLogic logic = new SalesReportLogic(gui);
-        gui.setController(logic);
 
         // Retrieve private fields for assertions using reflection
         JLabel revenueLabel = getPrivateField(gui, "revenueValueLabel");

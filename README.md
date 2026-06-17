@@ -37,15 +37,6 @@ Desenvolvido como requisito parcial para aprovação na disciplina **SCC0204 - P
 
 ---
 
-## 🎨 Redesign Visual (Premium UI)
-
-A interface do painel de relatórios foi modernizada para se assemelhar a painéis da web modernos (estilo Tailwind/Glassmorphism):
-* **`ShadowCard`:** Cartões métricos com cantos arredondados (16px) e sombras projetadas desenhadas via renderização 2D com suavização de serrilhado (*Anti-aliasing*).
-* **`FlatButton`:** Botões sem bordas clássicas de sistema operacional, com transição de cor suave sob passagem de mouse (*hover*) e cursor de clique customizado.
-* **Badges HTML:** Exibição do pódio dos produtos mais vendidos estilizada com tags de estilo HTML direto em Swing.
-
----
-
 ## 📂 Estrutura do Projeto
 
 O projeto adota o padrão de arquitetura **MVC (Model-View-Controller)** para separar a lógica de negócios das interfaces gráficas:
@@ -73,7 +64,7 @@ O projeto adota o padrão de arquitetura **MVC (Model-View-Controller)** para se
 
 ### Passo 1: Clonar o Repositório
 ```bash
-git clone https://github.com/unkind_pear/Java-Cafe---Point-Sale-System.git
+git clone https://github.com/mat-hdf/Java-Cafe---Point-Sale-System.git
 cd Java-Cafe---Point-Sale-System
 ```
 

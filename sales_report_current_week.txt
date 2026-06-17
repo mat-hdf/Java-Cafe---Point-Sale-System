@@ -1,0 +1,14 @@
+=========================================
+          SALES REPORT SUMMARY
+=========================================
+Period: Current Week
+Generated At: 2026-06-09 09:28:52
+-----------------------------------------
+Total Revenue: $315,50
+Total Transactions: 4
+-----------------------------------------
+TOP BEST-SELLING ITEMS:
+1. Pie - 18 sold
+2. Coffee - 4 sold
+3. Water - 2 sold
+=========================================

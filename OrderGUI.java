@@ -15,7 +15,7 @@ public class OrderGUI extends JPanel
     private JScrollPane orderScroll, obsScrollPane;
     private JTable orderTable;
     private DefaultTableModel tableModel;
-    private JLabel orderTotal, orderValue, obsLabel, welcomeLabel, text;
+    private JLabel orderTotal, orderValue, obsLabel, welcomeLabel, text, orderSubTotal, subValue, orderTax, taxValue;
     private JTextArea obs;
 
     /**
@@ -94,12 +94,24 @@ public class OrderGUI extends JPanel
 
         //setting top price
         totalPanel = new JPanel();
-        totalPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        totalPanel.setLayout(new GridLayout(3, 2, 5, 5));
+        orderSubTotal = new JLabel("Subtotal: $ ");
+        orderSubTotal.setFont(new Font("Arial", Font.BOLD, 16));
+        subValue = new JLabel("0.00");
+        subValue.setFont(new Font("Arial", Font.BOLD, 16));
+        orderTax = new JLabel("Tax: $ ");
+        orderTax.setFont(new Font("Arial", Font.BOLD, 16));
+        taxValue = new JLabel("0.00");
+        taxValue.setFont(new Font("Arial", Font.BOLD, 16));
         orderTotal = new JLabel("Total: $ ");
         orderTotal.setFont(new Font("Arial", Font.BOLD, 16));
         orderValue = new JLabel("0.00");
         orderValue.setFont(new Font("Arial", Font.BOLD, 16));
         orderValue.setForeground(new Color(0, 150, 0));
+        totalPanel.add(orderSubTotal);
+        totalPanel.add(subValue);
+        totalPanel.add(orderTax);
+        totalPanel.add(taxValue);
         totalPanel.add(orderTotal);
         totalPanel.add(orderValue);
 
@@ -213,6 +225,16 @@ public class OrderGUI extends JPanel
     public JLabel getOrderValueLabel()
     {
         return orderValue;
+    }
+
+    public JLabel getSubLabel()
+    {
+        return subValue;
+    }
+
+    public JLabel getTaxLabel()
+    {
+        return taxValue;
     }
 
     /**

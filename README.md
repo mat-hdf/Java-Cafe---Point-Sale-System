@@ -82,7 +82,7 @@ java Main
 
 ---
 
-## 🧪 Suíte de Testes Unitários
+## 🧪 Testes Unitários
 
 O projeto possui um executor de testes integrado e independente (`TestRunner.java`) para validar a integridade dos cálculos, persistência e manipulação lógica de dados:
 

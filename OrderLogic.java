@@ -24,6 +24,7 @@ public class OrderLogic implements ActionListener
     private OrderGUI gui;   //receives GUI to access its public methods and components to update visual components
     private double currentTotal = 0.0, currentSub = 0.0, currentTax = 0.0;  //updates total order value
     private SalesReportGUI reportScreen;
+    private InventoryLogic inventoryLogic;
     private double tax = 0.1;
 
     /**
@@ -44,6 +45,16 @@ public class OrderLogic implements ActionListener
     public void setReportScreen(SalesReportGUI reportScreen) 
     {
         this.reportScreen = reportScreen;
+    }
+
+    /**
+     * Sets the InventoryLogic controller to handle stock operations.
+     *
+     * @param inventoryLogic the InventoryLogic controller instance
+     */
+    public void setInventoryLogic(InventoryLogic inventoryLogic) 
+    {
+        this.inventoryLogic = inventoryLogic;
     }
 
     /**
@@ -224,9 +235,41 @@ public class OrderLogic implements ActionListener
                 String name = (String) model.getValueAt(i, 1);
                 String priceStr = model.getValueAt(i, 2).toString();
                 double price = Double.parseDouble(priceStr.replace(",", "."));
-                items.add(new SalesPersistence.SaleItem(name, qty, price));
+                double unitPrice = price / qty;
+                items.add(new SalesPersistence.SaleItem(name, qty, unitPrice));
             }
+
+            // Check stock availability before proceeding
+            if (inventoryLogic != null)
+            {
+                try
+                {
+                    for (SalesPersistence.SaleItem item : items)
+                    {
+                        int stock = inventoryLogic.getStock(item.getName());
+                        if (stock < item.getQuantity())
+                        {
+                            throw new OutOfStockException("Item '" + item.getName() + "' is out of stock or has insufficient quantity! (Available: " + stock + ")");
+                        }
+                    }
+                }
+                catch (OutOfStockException ex)
+                {
+                    JOptionPane.showMessageDialog(gui, ex.getMessage(), "Out of Stock Error", JOptionPane.ERROR_MESSAGE);
+                    return; // Aborts submitting the order
+                }
+            }
+
             SalesPersistence.saveSale(items);
+
+            // Decrease inventory stock
+            if (inventoryLogic != null)
+            {
+                for (SalesPersistence.SaleItem item : items)
+                {
+                    inventoryLogic.decreaseStock(item.getName(), item.getQuantity());
+                }
+            }
 
             if (reportScreen != null) 
             {

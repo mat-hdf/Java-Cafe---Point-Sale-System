@@ -32,6 +32,9 @@ public class Main {
             InventoryLogic invLogic = new InventoryLogic(inventoryScreen);
             inventoryScreen.setController(invLogic);
             
+            // Conecta o controle do inventário com o controle do pedido
+            logic.setInventoryLogic(invLogic);
+            
             // Cria a tela de relatórios de vendas
             SalesReportGUI reportScreen = new SalesReportGUI();
             logic.setReportScreen(reportScreen);

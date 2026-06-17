@@ -37,41 +37,52 @@ public class SalesReportGUI extends JPanel implements ActionListener {
      * and initializes report sales data.
      */
     public SalesReportGUI() {
-        // Configura o layout principal com margens externas
-        setLayout(new BorderLayout(15, 15));
-        setBorder(new EmptyBorder(20, 20, 20, 20));
-        setBackground(new Color(243, 244, 246)); // Fundo cinza claro moderno
+        // Configura o layout principal com margens externas e fundo moderno slate
+        setLayout(new BorderLayout(20, 20));
+        setBorder(new EmptyBorder(24, 24, 24, 24));
+        setBackground(new Color(248, 250, 252)); // Slate 50 background
 
         // Painel superior de controle (Titulo e Acoes)
         JPanel controlPanel = new JPanel(new BorderLayout());
         controlPanel.setOpaque(false);
 
-        JLabel titleLabel = new JLabel("Sales Dashboard");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 26));
-        titleLabel.setForeground(new Color(31, 41, 55));
-        controlPanel.add(titleLabel, BorderLayout.WEST);
+        // Title and description block
+        JPanel titleContainer = new JPanel(new GridLayout(2, 1, 2, 2));
+        titleContainer.setOpaque(false);
 
-        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JLabel titleLabel = new JLabel("Sales Dashboard");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        titleLabel.setForeground(new Color(15, 23, 42)); // Slate 900
+        
+        JLabel subtitleLabel = new JLabel("View metrics, transactions, and best sellers");
+        subtitleLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+        subtitleLabel.setForeground(new Color(100, 116, 139)); // Slate 500
+        
+        titleContainer.add(titleLabel);
+        titleContainer.add(subtitleLabel);
+        controlPanel.add(titleContainer, BorderLayout.WEST);
+
+        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
         actionsPanel.setOpaque(false);
 
         // Seletor de periodo
         periodComboBox = new JComboBox<>(new String[]{"Today", "Current Week", "Current Month"});
         periodComboBox.setFont(new Font("Arial", Font.PLAIN, 14));
-        periodComboBox.setPreferredSize(new Dimension(150, 35));
+        periodComboBox.setPreferredSize(new Dimension(150, 36));
+        periodComboBox.setBackground(Color.WHITE);
+        periodComboBox.setBorder(BorderFactory.createLineBorder(new Color(226, 232, 240), 1));
 
-        // Botao de atualizar
-        refreshButton = new JButton("Refresh");
-        refreshButton.setFont(new Font("Arial", Font.BOLD, 14));
-        refreshButton.setPreferredSize(new Dimension(100, 35));
+        // Botao de atualizar (Flat Indigo)
+        refreshButton = new FlatButton("Refresh", new Color(99, 102, 241), new Color(79, 70, 229), Color.WHITE);
+        refreshButton.setPreferredSize(new Dimension(100, 36));
 
-        // Botao de exportar
-        exportButton = new JButton("Export Report");
-        exportButton.setFont(new Font("Arial", Font.BOLD, 14));
-        exportButton.setPreferredSize(new Dimension(140, 35));
+        // Botao de exportar (Flat Slate-Light)
+        exportButton = new FlatButton("Export Report", new Color(243, 244, 246), new Color(229, 231, 235), new Color(55, 65, 81));
+        exportButton.setPreferredSize(new Dimension(140, 36));
 
         JLabel periodLabel = new JLabel("Period:");
         periodLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        periodLabel.setForeground(new Color(75, 85, 99));
+        periodLabel.setForeground(new Color(100, 116, 139)); // Slate 500
 
         actionsPanel.add(periodLabel);
         actionsPanel.add(periodComboBox);
@@ -82,11 +93,11 @@ public class SalesReportGUI extends JPanel implements ActionListener {
         add(controlPanel, BorderLayout.NORTH);
 
         // Painel central contendo os cards de metricas
-        JPanel cardsPanel = new JPanel(new GridLayout(1, 3, 20, 0));
+        JPanel cardsPanel = new JPanel(new GridLayout(1, 3, 24, 0));
         cardsPanel.setOpaque(false);
 
         // Card 1: Receita Total (Verde)
-        JPanel revenueCard = createMetricCard("TOTAL REVENUE", new Color(16, 185, 129));
+        ShadowCard revenueCard = createMetricCard("TOTAL REVENUE", new Color(16, 185, 129), "💵");
         revenueValueLabel = new JLabel("$ 0.00");
         revenueValueLabel.setFont(new Font("Arial", Font.BOLD, 32));
         revenueValueLabel.setForeground(new Color(16, 185, 129));
@@ -94,7 +105,7 @@ public class SalesReportGUI extends JPanel implements ActionListener {
         revenueCard.add(revenueValueLabel, BorderLayout.CENTER);
 
         // Card 2: Numero de Transacoes (Azul)
-        JPanel transactionsCard = createMetricCard("TRANSACTIONS", new Color(59, 130, 246));
+        ShadowCard transactionsCard = createMetricCard("TRANSACTIONS", new Color(59, 130, 246), "🧾");
         transactionsValueLabel = new JLabel("0");
         transactionsValueLabel.setFont(new Font("Arial", Font.BOLD, 36));
         transactionsValueLabel.setForeground(new Color(59, 130, 246));
@@ -102,15 +113,15 @@ public class SalesReportGUI extends JPanel implements ActionListener {
         transactionsCard.add(transactionsValueLabel, BorderLayout.CENTER);
 
         // Card 3: Top-3 Itens (Roxo)
-        JPanel topSellingCard = createMetricCard("TOP 3 BEST SELLERS", new Color(139, 92, 246));
-        JPanel topItemsListPanel = new JPanel(new GridLayout(3, 1, 5, 5));
+        ShadowCard topSellingCard = createMetricCard("TOP 3 BEST SELLERS", new Color(139, 92, 246), "🏆");
+        JPanel topItemsListPanel = new JPanel(new GridLayout(3, 1, 8, 8));
         topItemsListPanel.setOpaque(false);
         
         topItemLabels = new JLabel[3];
         for (int i = 0; i < 3; i++) {
             topItemLabels[i] = new JLabel("-");
             topItemLabels[i].setFont(new Font("Arial", Font.PLAIN, 15));
-            topItemLabels[i].setForeground(new Color(55, 65, 81));
+            topItemLabels[i].setForeground(new Color(71, 85, 105)); // Slate 700
             topItemLabels[i].setHorizontalAlignment(SwingConstants.CENTER);
             topItemsListPanel.add(topItemLabels[i]);
         }
@@ -133,27 +144,25 @@ public class SalesReportGUI extends JPanel implements ActionListener {
 
     /**
      * Helper method to create a modern looking visual metric card.
-     *
-     * @param title       the title of the metric
-     * @param accentColor the accent border color of the card
-     * @return the styled JPanel card
      */
-    private JPanel createMetricCard(String title, Color accentColor) {
-        JPanel card = new JPanel(new BorderLayout(10, 10));
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(4, 0, 0, 0, accentColor), // Linha de destaque no topo
-            BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(229, 231, 235), 1),
-                BorderFactory.createEmptyBorder(20, 20, 20, 20)
-            )
-        ));
+    private ShadowCard createMetricCard(String title, Color accentColor, String icon) {
+        ShadowCard card = new ShadowCard(16, accentColor);
 
+        // Header panel containing Icon + Title
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+        headerPanel.setOpaque(false);
+
+        JLabel iconLabel = new JLabel(icon);
+        iconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 16));
+        
         JLabel titleLabel = new JLabel(title);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 12));
-        titleLabel.setForeground(new Color(156, 163, 175));
-        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        card.add(titleLabel, BorderLayout.NORTH);
+        titleLabel.setForeground(new Color(100, 116, 139)); // Slate 500
+
+        headerPanel.add(iconLabel);
+        headerPanel.add(titleLabel);
+        
+        card.add(headerPanel, BorderLayout.NORTH);
 
         return card;
     }
@@ -349,13 +358,132 @@ public class SalesReportGUI extends JPanel implements ActionListener {
      * @param topItems list of map entries representing item names and sales quantity
      */
     public void setTopItems(List<Map.Entry<String, Integer>> topItems) {
+        String[] rankColors = { "#6366F1", "#3B82F6", "#8B5CF6" }; // Indigo, Blue, Purple
         for (int i = 0; i < 3; i++) {
             if (i < topItems.size()) {
                 Map.Entry<String, Integer> entry = topItems.get(i);
-                topItemLabels[i].setText(String.format("%d. %s (%d sold)", i + 1, entry.getKey(), entry.getValue()));
+                topItemLabels[i].setText(String.format(
+                    "<html><body style='font-family: Arial; font-size: 11px; margin: 3px;'>" +
+                    "<span style='background-color: %s; color: white; padding: 2px 6px; font-weight: bold;'>#%d</span> " +
+                    "<b style='color: #1E293B;'>%s</b> <font color='#64748B'>(%d sold)</font></body></html>",
+                    rankColors[i], i + 1, entry.getKey(), entry.getValue()
+                ));
             } else {
-                topItemLabels[i].setText("-");
+                topItemLabels[i].setText("<html><body style='font-family: Arial; color: #94A3B8; font-size: 11px;'>-</body></html>");
             }
+        }
+    }
+
+    /**
+     * Custom JPanel that draws a card with rounded corners and a soft drop shadow.
+     */
+    private static class ShadowCard extends JPanel {
+        private final int cornerRadius;
+        private final Color accentColor;
+        private final int shadowWidth = 5;
+
+        public ShadowCard(int cornerRadius, Color accentColor) {
+            this.cornerRadius = cornerRadius;
+            this.accentColor = accentColor;
+            setOpaque(false);
+            setBackground(Color.WHITE);
+            setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+            setLayout(new BorderLayout(10, 10));
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int x = shadowWidth;
+            int y = shadowWidth;
+            int w = getWidth() - 2 * shadowWidth;
+            int h = getHeight() - 2 * shadowWidth;
+
+            // Draw shadow layers
+            for (int i = 0; i < shadowWidth; i++) {
+                g2.setColor(new Color(0, 0, 0, 3 + i));
+                g2.drawRoundRect(x - i, y - i, w + 2 * i, h + 2 * i, cornerRadius, cornerRadius);
+            }
+
+            // Draw card background
+            g2.setColor(getBackground());
+            g2.fillRoundRect(x, y, w, h, cornerRadius, cornerRadius);
+
+            // Draw top accent line
+            if (accentColor != null) {
+                g2.setColor(accentColor);
+                g2.fillRoundRect(x, y, w, 6, cornerRadius, cornerRadius);
+                g2.fillRect(x, y + 3, w, 3);
+            }
+
+            g2.dispose();
+        }
+    }
+
+    /**
+     * Custom JButton with rounded corners, solid color, hand cursor, and hover effects.
+     */
+    private static class FlatButton extends JButton {
+        private final Color normalBg;
+        private final Color hoverBg;
+        private final Color textCol;
+
+        public FlatButton(String text, Color bg, Color hover, Color fg) {
+            super(text);
+            this.normalBg = bg;
+            this.hoverBg = hover;
+            this.textCol = fg;
+
+            setFont(new Font("Arial", Font.BOLD, 13));
+            setForeground(fg);
+            setBackground(bg);
+            setFocusPainted(false);
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+            setOpaque(false);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+            addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mouseEntered(java.awt.event.MouseEvent e) {
+                    setBackground(hoverBg);
+                }
+
+                @Override
+                public void mouseExited(java.awt.event.MouseEvent e) {
+                    setBackground(normalBg);
+                }
+            });
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2.setColor(getBackground());
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+
+            // If it's a light background button, draw a subtle border
+            if (normalBg.getRed() > 220 && normalBg.getGreen() > 220 && normalBg.getBlue() > 220) {
+                g2.setColor(new Color(226, 232, 240));
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
+            }
+
+            // Draw button text manually for perfect centering
+            g2.setColor(textCol);
+            FontMetrics fm = g2.getFontMetrics(getFont());
+            int textWidth = fm.stringWidth(getText());
+            int textHeight = fm.getAscent();
+            int x = (getWidth() - textWidth) / 2;
+            int y = (getHeight() - textHeight) / 2 + fm.getAscent();
+            g2.setFont(getFont());
+            g2.drawString(getText(), x, y);
+
+            g2.dispose();
         }
     }
 }

@@ -1,14 +1,18 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.*;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 public class InventoryLogic implements ActionListener {
     
     private InventoryGUI gui;
+    private static final String FILE_PATH = "inventory.csv";
 
     public InventoryLogic(InventoryGUI gui) {
         this.gui = gui;
+        loadInventory();
+        this.gui.getTableModel().addTableModelListener(e -> saveInventory());
     }
 
     @Override
@@ -107,7 +111,7 @@ public class InventoryLogic implements ActionListener {
         for (int i = 0; i < model.getRowCount(); i++) {
             String currentName = (String) model.getValueAt(i, 0);
             
-            if (currentName != null && currentName.equalsIgnoreCase(productName)) {
+            if (isSameProduct(currentName, productName)) {
                 try {
                     String stockRaw = (String) model.getValueAt(i, 2);
                     int currentStock = Integer.parseInt(stockRaw.trim());
@@ -128,5 +132,90 @@ public class InventoryLogic implements ActionListener {
                 break; // Product found and updated, exits the loop
             }
         }
+    }
+    
+    /**
+     * Loads the inventory from the CSV file. If the file does not exist,
+     * it initializes the file with the default data currently loaded in the JTable.
+     */
+    public void loadInventory() {
+        DefaultTableModel model = gui.getTableModel();
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            saveInventory();
+            return;
+        }
+
+        // Disable TableModelListener temporarily to avoid write loop during loading
+        model.setRowCount(0);
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            br.readLine(); // skip header
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length < 3) continue;
+                String name = parts[0];
+                String price = parts[1];
+                String stock = parts[2];
+                model.addRow(new Object[]{name, price, stock, ""});
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Saves the current JTable inventory data into the CSV file.
+     */
+    public void saveInventory() {
+        File file = new File(FILE_PATH);
+        try (PrintWriter pw = new PrintWriter(new FileWriter(file))) {
+            pw.println("product_name,price,stock_quantity");
+            DefaultTableModel model = gui.getTableModel();
+            for (int i = 0; i < model.getRowCount(); i++) {
+                String name = (String) model.getValueAt(i, 0);
+                String price = (String) model.getValueAt(i, 1);
+                String stock = (String) model.getValueAt(i, 2);
+                pw.printf("%s,%s,%s\n", name, price, stock);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Helper to get the current stock level of a given product.
+     *
+     * @param productName the name of the product
+     * @return the current stock quantity, or 0 if not found
+     */
+    public int getStock(String productName) {
+        DefaultTableModel model = gui.getTableModel();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            String currentName = (String) model.getValueAt(i, 0);
+            if (isSameProduct(currentName, productName)) {
+                try {
+                    String stockRaw = (String) model.getValueAt(i, 2);
+                    return Integer.parseInt(stockRaw.trim());
+                } catch (NumberFormatException ex) {
+                    return 0;
+                }
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Helper to verify if two product names match case-insensitively and
+     * handle common spelling differences such as "Capuccino" vs "Cappuccino".
+     */
+    private boolean isSameProduct(String name1, String name2) {
+        if (name1 == null || name2 == null) return false;
+        String n1 = name1.trim().toLowerCase();
+        String n2 = name2.trim().toLowerCase();
+        if (n1.equals("capuccino") || n1.equals("cappuccino")) {
+            return n2.equals("capuccino") || n2.equals("cappuccino");
+        }
+        return n1.equals(n2);
     }
 }

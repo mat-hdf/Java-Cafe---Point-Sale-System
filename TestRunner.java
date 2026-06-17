@@ -146,7 +146,7 @@ public class TestRunner {
         assertEqual(2, model.getRowCount(), "Table should contain 2 items after adding Coffee");
 
         // Verify total label
-        assertEqual("7.00", gui.getOrderValueLabel().getText(), "Total value should be 4.50 + 2.50 = 7.00");
+        assertEqual("7.70", gui.getOrderValueLabel().getText(), "Total value should be 4.50 + 2.50 = 7.00 + 10% tax = 7.70");
 
         // Cancel order
         logic.actionPerformed(new java.awt.event.ActionEvent(gui, 0, "Cancel Order"));

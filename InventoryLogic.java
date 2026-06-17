@@ -3,42 +3,21 @@ import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
-/**
- * Controller class managing the business logic for product inventory.
- * Handles adding, updating, deleting products, and low stock threshold checks.
- */
 public class InventoryLogic implements ActionListener {
-    // GUI para acessar os componentes e atualizar a interface
+    
     private InventoryGUI gui;
 
-    /**
-     * Constructs an InventoryLogic controller linked to an InventoryGUI.
-     *
-     * @param gui the InventoryGUI instance to control
-     */
     public InventoryLogic(InventoryGUI gui) {
         this.gui = gui;
     }
 
-    /**
-     * Listens for action events triggered from form action buttons.
-     *
-     * @param e the action event
-     */
     @Override
     public void actionPerformed(ActionEvent e) {
-        String botaoClicado = e.getActionCommand();
+        String actionCommand = e.getActionCommand();
 
-        // Switch para determinar qual ação executar
-        switch (botaoClicado) {
+        switch (actionCommand) {
             case "Add Product":
                 addProduct();
-                break;
-            case "Update Product": 
-                updateProduct();   
-                break;
-            case "Delete Product":
-                deleteProduct();
                 break;
             case "Check Low Stock":
                 checkLowStock();
@@ -46,32 +25,30 @@ public class InventoryLogic implements ActionListener {
         }
     }
 
-    // Métodos de Ação
-
-    /**
-     * Extracts values from input fields and adds a new product row to the inventory table.
-     */
+    // Adds the product using the data from the bottom form
     private void addProduct() {
-        String name = gui.getNameField().getText();
-        String priceStr = gui.getPriceField().getText();
-        String stockStr = gui.getStockField().getText();
+        String name = gui.getNameField().getText().trim();
+        String priceStr = gui.getPriceField().getText().trim();
+        String stockStr = gui.getStockField().getText().trim();
 
-        // Validação simples de campos vazios
         if (name.isEmpty() || priceStr.isEmpty() || stockStr.isEmpty()) {
             JOptionPane.showMessageDialog(gui, "Please fill in all fields.", "Input Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         try {
-            // Tenta converter os textos para números (Tratamento de exceção)
             double price = Double.parseDouble(priceStr.replace(",", "."));
             int stock = Integer.parseInt(stockStr);
 
-            // Adiciona na tabela
-            DefaultTableModel model = gui.getTableModel();
-            model.addRow(new Object[]{name, String.format("%.2f", price), String.valueOf(stock)});
+            // Lock to prevent negative values
+            if (price < 0 || stock < 0) {
+                JOptionPane.showMessageDialog(gui, "Price and Stock must be positive numbers.", "Input Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
 
-            // Limpa os campos após adicionar
+            // Adds the row using Locale.US to ensure the correct "X.XX" format and the empty space for the button
+            gui.getTableModel().addRow(new Object[]{name, String.format(java.util.Locale.US, "%.2f", price), String.valueOf(stock), ""});
+
             gui.getNameField().setText("");
             gui.getPriceField().setText("");
             gui.getStockField().setText("");
@@ -81,93 +58,75 @@ public class InventoryLogic implements ActionListener {
         }
     }
 
-    /**
-     * Updates details of the currently selected product in the inventory table.
-     */
-    private void updateProduct() {
-        int selectedRow = gui.getInventoryTable().getSelectedRow();
+    // Deletes the product (called directly by mouse click on the red button in the GUI)
+    public void deleteProduct(int row) {
+        int response = JOptionPane.showConfirmDialog(gui, "Are you sure you want to delete this product?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
         
-        if (selectedRow == -1) {
-            return; // Medida de segurança, embora o botão esteja oculto se não houver seleção
-        }
-
-        // Pega os valores dos campos de texto para atualizar a linha selecionada
-        String name = gui.getNameField().getText();
-        String priceStr = gui.getPriceField().getText();
-        String stockStr = gui.getStockField().getText();
-
-        // Validação simples de campos vazios
-        if (name.isEmpty() || priceStr.isEmpty() || stockStr.isEmpty()) {
-            JOptionPane.showMessageDialog(gui, "Please fill in all fields to update.", "Input Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        try {
-            double price = Double.parseDouble(priceStr.replace(",", "."));
-            int stock = Integer.parseInt(stockStr);
-
-            // Atualiza todas as colunas da linha selecionada
-            gui.getTableModel().setValueAt(name, selectedRow, 0);
-            gui.getTableModel().setValueAt(String.format("%.2f", price), selectedRow, 1);
-            gui.getTableModel().setValueAt(String.valueOf(stock), selectedRow, 2);
-            
-            // Remove a seleção da tabela para resetar a interface
-            gui.getInventoryTable().clearSelection();
-            
-            JOptionPane.showMessageDialog(gui, "Product updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-        } catch (NumberFormatException ex) {
-            // Validação de formato para preço e estoque
-            JOptionPane.showMessageDialog(gui, "Price must be a decimal and Stock must be an integer.", "Format Error", JOptionPane.ERROR_MESSAGE);
+        if (response == JOptionPane.YES_OPTION) {
+            gui.getTableModel().removeRow(row);
         }
     }
 
-    /**
-     * Deletes the currently selected product row from the inventory table after confirmation.
-     */
-    private void deleteProduct() {
-        int selectedRow = gui.getInventoryTable().getSelectedRow();
-        
-        if (selectedRow != -1) {
-            // Confirmação antes de deletar
-            int response = JOptionPane.showConfirmDialog(gui, "Are you sure you want to delete this product?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
-            if (response == JOptionPane.YES_OPTION) {
-                gui.getTableModel().removeRow(selectedRow);
-            }
-        } else {
-            JOptionPane.showMessageDialog(gui, "Please select a product to delete.", "Selection Error", JOptionPane.WARNING_MESSAGE);
-        }
-    }
-
-    /**
-     * Checks all products against the threshold selection and displays items with stock levels below it.
-     */
+    // Checks for low stock by scanning the table
     private void checkLowStock() {
         DefaultTableModel model = gui.getTableModel();
         boolean hasLowStock = false;
-        
-        // Captura o valor diretamente do JSpinner na GUI
         int threshold = (int) gui.getThresholdSpinner().getValue(); 
-        
-        // StringBuilder para construir a mensagem de itens com baixo estoque
         StringBuilder lowStockItems = new StringBuilder("Items with Low Stock (Below " + threshold + "):\n\n");
 
-        // Itera sobre as linhas da tabela para verificar o estoque de cada item
         for (int i = 0; i < model.getRowCount(); i++) {
-            String name = (String) model.getValueAt(i, 0);
-            int stock = Integer.parseInt((String) model.getValueAt(i, 2));
+            try {
+                String name = (String) model.getValueAt(i, 0);
+                
+                // trim() removes whitespace in case the user types with space during direct editing
+                String stockRaw = (String) model.getValueAt(i, 2);
+                int stock = Integer.parseInt(stockRaw.trim());
 
-            // Se estiver abaixo do limite, adiciona à mensagem
-            if (stock < threshold) {
-                lowStockItems.append("- ").append(name).append(" (Current Stock: ").append(stock).append(")\n");
-                hasLowStock = true;
+                if (stock < threshold) {
+                    lowStockItems.append("- ").append(name).append(" (Current Stock: ").append(stock).append(")\n");
+                    hasLowStock = true;
+                }
+            } catch (Exception ex) {
+                // Prevents crash in case the user entered text in the stock column
+                System.out.println("Error reading stock at row " + i + ". Ensure it is an integer number.");
             }
         }
 
-        // Exibe a mensagem de itens com baixo estoque ou uma mensagem informando que tudo está ok
         if (hasLowStock) {
-            JOptionPane.showMessageDialog(gui, lowStockItems.toString(), "Stock Status", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(gui, lowStockItems.toString(), "Stock Alert", JOptionPane.WARNING_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(gui, "All items have sufficient stock levels.", "Stock Status", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    // Method called by OrderLogic to automatically decrease stock on sales
+    public void decreaseStock(String productName, int quantitySold) {
+        DefaultTableModel model = gui.getTableModel();
+        int threshold = (int) gui.getThresholdSpinner().getValue();
+
+        for (int i = 0; i < model.getRowCount(); i++) {
+            String currentName = (String) model.getValueAt(i, 0);
+            
+            if (currentName != null && currentName.equalsIgnoreCase(productName)) {
+                try {
+                    String stockRaw = (String) model.getValueAt(i, 2);
+                    int currentStock = Integer.parseInt(stockRaw.trim());
+                    int newStock = currentStock - quantitySold;
+                    
+                    if (newStock < 0) newStock = 0;
+
+                    model.setValueAt(String.valueOf(newStock), i, 2);
+
+                    if (newStock < threshold) {
+                        JOptionPane.showMessageDialog(gui, 
+                            "Auto-Alert: Stock for '" + productName + "' dropped to " + newStock + "!\n(Below threshold of " + threshold + ")", 
+                            "Low Stock Warning", JOptionPane.WARNING_MESSAGE);
+                    }
+                } catch (NumberFormatException ex) {
+                    System.out.println("Error decreasing stock for item " + productName);
+                }
+                break; // Product found and updated, exits the loop
+            }
         }
     }
 }

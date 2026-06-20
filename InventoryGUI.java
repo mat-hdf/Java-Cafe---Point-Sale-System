@@ -1,5 +1,7 @@
 import java.awt.*;
+import java.io.File;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
@@ -11,8 +13,8 @@ public class InventoryGUI extends JPanel {
     private JScrollPane tableScroll;
     
     private JPanel formPanel, actionPanel, mainBottomPanel;
-    private JTextField nameField, priceField, stockField;
-    private JButton addButton, checkStockButton, clearSelectionButton;
+    private JTextField nameField, priceField, stockField, imagePathField;
+    private JButton addButton, checkStockButton, clearSelectionButton, browseImageButton;
     
     private JSpinner thresholdSpinner; 
 
@@ -20,13 +22,13 @@ public class InventoryGUI extends JPanel {
         // Main panel settings
         setLayout(new BorderLayout(10,10));
 
-        // 1. Table Configuration (Data columns + 1 Delete Column)
-        String[] columnNames = {"Product Name", "Price ($)", "Stock Quantity", "Delete"};
+        // 1. Table Configuration (Data columns + 1 Image Path Column + 1 Delete Column)
+        String[] columnNames = {"Product Name", "Price ($)", "Stock Quantity", "Image Path", "Delete"};
         
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column != 3; // Blocks only the Delete button column (3)
+                return column != 4; // Blocks only the Delete button column (4)
             }
 
             // Intercepts and validates any direct editing done on the table
@@ -62,11 +64,15 @@ public class InventoryGUI extends JPanel {
                     }
                 } 
                 // Validation for the Name column (0)
-                else {
+                else if (column == 0) {
                     if (input.isEmpty()) {
                         JOptionPane.showMessageDialog(null, "Product name cannot be empty.", "Input Error", JOptionPane.ERROR_MESSAGE);
                         return; // Aborts the editing
                     }
+                    super.setValueAt(input, row, column);
+                }
+                // Validation for direct Image Path edits (3)
+                else {
                     super.setValueAt(input, row, column);
                 }
             }
@@ -78,44 +84,92 @@ public class InventoryGUI extends JPanel {
         inventoryTable.setFont(new Font("SansSerif", Font.PLAIN, 14));
         inventoryTable.setRowHeight(30);
         
-        // Renders column 3 as a button with a red "X" (\u2716)
-        inventoryTable.getColumnModel().getColumn(3).setCellRenderer(new ButtonRenderer("\u2716 Del", new Color(220, 20, 60)));  
-        inventoryTable.getColumnModel().getColumn(3).setMaxWidth(80);
+        // Renders column 4 as a button with a red "X" (\u2716)
+        inventoryTable.getColumnModel().getColumn(4).setCellRenderer(new ButtonRenderer("\u2716 Del", new Color(220, 20, 60)));  
+        inventoryTable.getColumnModel().getColumn(4).setMaxWidth(80);
 
         tableScroll = new JScrollPane(inventoryTable);
         tableScroll.setBorder(BorderFactory.createTitledBorder("Current Inventory"));
         
-        // Adding some sample data (The last empty string "" reserves space for the button)
-        tableModel.addRow(new Object[]{"Pie", "4.50", "10", ""});
-        tableModel.addRow(new Object[]{"Cake", "5.00", "8", ""});
-        tableModel.addRow(new Object[]{"Coffee", "2.50", "40", ""});
-        tableModel.addRow(new Object[]{"Tea", "2.50", "25", ""});
-        tableModel.addRow(new Object[]{"Water", "1.00", "50", ""});
-        tableModel.addRow(new Object[]{"Cappuccino", "2.50", "25", ""});
+        // Adding initial sample data containing default local paths
+        tableModel.addRow(new Object[]{"Pie", "4.50", "10", "imgs/pie.jpg", ""});
+        tableModel.addRow(new Object[]{"Cake", "5.00", "8", "imgs/cake.jpeg", ""});
+        tableModel.addRow(new Object[]{"Coffee", "2.50", "40", "imgs/coffee.JPG", ""});
+        tableModel.addRow(new Object[]{"Tea", "2.50", "25", "imgs/tea.jpg", ""});
+        tableModel.addRow(new Object[]{"Water", "1.00", "50", "imgs/commercial-pet-bottle.jpg", ""});
+        tableModel.addRow(new Object[]{"Cappuccino", "2.50", "25", "imgs/capuccino.jpg", ""});
 
         add(tableScroll, BorderLayout.CENTER);
 
-        // Form Panel for data entry (Exclusive for ADDING new products)
-        formPanel = new JPanel(new GridLayout(2, 3, 10, 5));
+        // Form Panel for data entry (Expanded to 4 columns to fit the Image path field)
+        formPanel = new JPanel(new GridLayout(2, 4, 10, 5));
         formPanel.setBorder(BorderFactory.createTitledBorder("Add New Product"));
         
         formPanel.add(new JLabel("Product Name:"));
         formPanel.add(new JLabel("Price ($):"));
         formPanel.add(new JLabel("Stock Quantity:"));
         
+        // Adds a visual cue for supported formats right on the form label
+        formPanel.add(new JLabel("Product Image (JPG/PNG):"));
+        
         nameField = new JTextField();
         priceField = new JTextField();
         stockField = new JTextField();
         
+        // Setup image chooser sub-panel with automatic folder copy deployment logic
+        JPanel imageChooserPanel = new JPanel(new BorderLayout(5, 0));
+        imagePathField = new JTextField();
+        imagePathField.setEditable(false);
+        browseImageButton = new JButton("...");
+        browseImageButton.setToolTipText("Select a valid image file (.jpg, .jpeg, .png, .gif)");
+        
+        // Launch file chooser, apply filters, and copy target file locally
+        browseImageButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Select a Product Image");
+            
+            // Restrict file selection to supported image extensions only
+            FileNameExtensionFilter imageFilter = new FileNameExtensionFilter(
+                "Supported Images (JPG, JPEG, PNG, GIF)", "jpg", "jpeg", "png", "gif"
+            );
+            fileChooser.setFileFilter(imageFilter);
+            fileChooser.setAcceptAllFileFilterUsed(false); // Disables the "All files" option
+            
+            int result = fileChooser.showOpenDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File sourceFile = fileChooser.getSelectedFile();
+                File targetDir = new File("imgs");
+                
+                // Create the directory if it does not exist
+                if (!targetDir.exists()) {
+                    targetDir.mkdirs();
+                }
+                
+                File targetFile = new File(targetDir, sourceFile.getName());
+                try {
+                    // Copy file to local project directory replacing existing files with the same name
+                    java.nio.file.Files.copy(sourceFile.toPath(), targetFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    // Update field text to relative local structure path
+                    imagePathField.setText("imgs/" + sourceFile.getName());
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Error copying image to local folder: " + ex.getMessage(), "File Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        
+        imageChooserPanel.add(imagePathField, BorderLayout.CENTER);
+        imageChooserPanel.add(browseImageButton, BorderLayout.EAST);
+        
         formPanel.add(nameField);
         formPanel.add(priceField);
         formPanel.add(stockField);
+        formPanel.add(imageChooserPanel);
 
         // Action Buttons Panel
         actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
-        addButton = new JButton("Add Product"); // Button to add a new product to the inventory
-        clearSelectionButton = new JButton("Clear Selection"); // Button to clear the fields
-        checkStockButton = new JButton("Check Low Stock");  // Button to check for products with low stock
+        addButton = new JButton("Add Product"); 
+        clearSelectionButton = new JButton("Clear Selection"); 
+        checkStockButton = new JButton("Check Low Stock");  
 
         // Low Stock Threshold Configuration
         SpinnerModel spinnerModel = new SpinnerNumberModel(10, 1, 100, 1);
@@ -134,6 +188,7 @@ public class InventoryGUI extends JPanel {
             nameField.setText("");
             priceField.setText("");
             stockField.setText("");
+            imagePathField.setText("");
         });
 
         // Grouping the form and buttons at the bottom (SOUTH)
@@ -157,8 +212,8 @@ public class InventoryGUI extends JPanel {
                 int row = inventoryTable.rowAtPoint(e.getPoint());
                 int col = inventoryTable.columnAtPoint(e.getPoint());
                 
-                // If a valid row and exactly column 3 (Delete) was clicked
-                if (row >= 0 && col == 3) { 
+                // If a valid row and exactly column 4 (Delete) was clicked
+                if (row >= 0 && col == 4) { 
                     logic.deleteProduct(row);
                 }
             }
@@ -171,6 +226,7 @@ public class InventoryGUI extends JPanel {
     public JTextField getNameField() { return nameField; }
     public JTextField getPriceField() { return priceField; }
     public JTextField getStockField() { return stockField; }
+    public JTextField getImagePathField() { return imagePathField; }
     public JSpinner getThresholdSpinner() { return thresholdSpinner; } 
 
     // --- Inner class that draws the button in the cell ---
@@ -181,8 +237,6 @@ public class InventoryGUI extends JPanel {
             setForeground(Color.WHITE);
             setFocusPainted(false);
             setOpaque(true);
-            
-            // SansSerif font in Bold size 14 ensures the "X" icon is crisp
             setFont(new Font("SansSerif", Font.BOLD, 14));
         }
 

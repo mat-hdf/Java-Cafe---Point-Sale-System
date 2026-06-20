@@ -7,12 +7,32 @@ import javax.swing.table.DefaultTableModel;
 public class InventoryLogic implements ActionListener {
     
     private InventoryGUI gui;
+    private OrderGUI orderGui;
+    private OrderLogic orderLogic;
     private static final String FILE_PATH = "inventory.csv";
 
     public InventoryLogic(InventoryGUI gui) {
         this.gui = gui;
         loadInventory();
         this.gui.getTableModel().addTableModelListener(e -> saveInventory());
+    }
+
+    /**
+     * Binds the ordering UI system to allow dynamic automatic UI re-renders on data modification
+     */
+    public void bindOrderSystem(OrderGUI orderGui, OrderLogic orderLogic) {
+        this.orderGui = orderGui;
+        this.orderLogic = orderLogic;
+        
+        // Initial setup load of the order menu grid
+        this.orderGui.refreshMenu(this.gui.getTableModel(), this.orderLogic);
+        
+        // Re-triggers menu builds anytime changes are detected on the inventory rows
+        this.gui.getTableModel().addTableModelListener(e -> {
+            if (this.orderGui != null && this.orderLogic != null) {
+                this.orderGui.refreshMenu(this.gui.getTableModel(), this.orderLogic);
+            }
+        });
     }
 
     @Override
@@ -34,44 +54,46 @@ public class InventoryLogic implements ActionListener {
         String name = gui.getNameField().getText().trim();
         String priceStr = gui.getPriceField().getText().trim();
         String stockStr = gui.getStockField().getText().trim();
+        String imagePath = gui.getImagePathField().getText().trim();
 
         if (name.isEmpty() || priceStr.isEmpty() || stockStr.isEmpty()) {
             JOptionPane.showMessageDialog(gui, "Please fill in all fields.", "Input Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
+        if (imagePath.isEmpty()) {
+            imagePath = "imgs/default.jpg"; // Automatic placeholder fallback if none picked
+        }
+
         try {
             double price = Double.parseDouble(priceStr.replace(",", "."));
             int stock = Integer.parseInt(stockStr);
 
-            // Lock to prevent negative values
             if (price < 0 || stock < 0) {
                 JOptionPane.showMessageDialog(gui, "Price and Stock must be positive numbers.", "Input Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            // Adds the row using Locale.US to ensure the correct "X.XX" format and the empty space for the button
-            gui.getTableModel().addRow(new Object[]{name, String.format(java.util.Locale.US, "%.2f", price), String.valueOf(stock), ""});
+            // Appends the row capturing the assigned file path to column 3
+            gui.getTableModel().addRow(new Object[]{name, String.format(java.util.Locale.US, "%.2f", price), String.valueOf(stock), imagePath, ""});
 
             gui.getNameField().setText("");
             gui.getPriceField().setText("");
             gui.getStockField().setText("");
+            gui.getImagePathField().setText("");
 
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(gui, "Price must be a decimal and Stock must be an integer.", "Format Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Deletes the product (called directly by mouse click on the red button in the GUI)
     public void deleteProduct(int row) {
         int response = JOptionPane.showConfirmDialog(gui, "Are you sure you want to delete this product?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
-        
         if (response == JOptionPane.YES_OPTION) {
             gui.getTableModel().removeRow(row);
         }
     }
 
-    // Checks for low stock by scanning the table
     private void checkLowStock() {
         DefaultTableModel model = gui.getTableModel();
         boolean hasLowStock = false;
@@ -81,8 +103,6 @@ public class InventoryLogic implements ActionListener {
         for (int i = 0; i < model.getRowCount(); i++) {
             try {
                 String name = (String) model.getValueAt(i, 0);
-                
-                // trim() removes whitespace in case the user types with space during direct editing
                 String stockRaw = (String) model.getValueAt(i, 2);
                 int stock = Integer.parseInt(stockRaw.trim());
 
@@ -91,8 +111,7 @@ public class InventoryLogic implements ActionListener {
                     hasLowStock = true;
                 }
             } catch (Exception ex) {
-                // Prevents crash in case the user entered text in the stock column
-                System.out.println("Error reading stock at row " + i + ". Ensure it is an integer number.");
+                System.out.println("Error reading stock at row " + i);
             }
         }
 
@@ -103,20 +122,17 @@ public class InventoryLogic implements ActionListener {
         }
     }
 
-    // Method called by OrderLogic to automatically decrease stock on sales
     public void decreaseStock(String productName, int quantitySold) {
         DefaultTableModel model = gui.getTableModel();
         int threshold = (int) gui.getThresholdSpinner().getValue();
 
         for (int i = 0; i < model.getRowCount(); i++) {
             String currentName = (String) model.getValueAt(i, 0);
-            
             if (isSameProduct(currentName, productName)) {
                 try {
                     String stockRaw = (String) model.getValueAt(i, 2);
                     int currentStock = Integer.parseInt(stockRaw.trim());
                     int newStock = currentStock - quantitySold;
-                    
                     if (newStock < 0) newStock = 0;
 
                     model.setValueAt(String.valueOf(newStock), i, 2);
@@ -129,15 +145,30 @@ public class InventoryLogic implements ActionListener {
                 } catch (NumberFormatException ex) {
                     System.out.println("Error decreasing stock for item " + productName);
                 }
-                break; // Product found and updated, exits the loop
+                break;
             }
         }
     }
     
     /**
-     * Loads the inventory from the CSV file. If the file does not exist,
-     * it initializes the file with the default data currently loaded in the JTable.
+     * Looks up prices live inside data entries matching key criteria string
      */
+    public double getPrice(String productName) {
+        DefaultTableModel model = gui.getTableModel();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            String currentName = (String) model.getValueAt(i, 0);
+            if (isSameProduct(currentName, productName)) {
+                try {
+                    String priceRaw = (String) model.getValueAt(i, 1);
+                    return Double.parseDouble(priceRaw.replace(",", "."));
+                } catch (NumberFormatException ex) {
+                    return 0.0;
+                }
+            }
+        }
+        return 0.0;
+    }
+
     public void loadInventory() {
         DefaultTableModel model = gui.getTableModel();
         File file = new File(FILE_PATH);
@@ -146,7 +177,6 @@ public class InventoryLogic implements ActionListener {
             return;
         }
 
-        // Disable TableModelListener temporarily to avoid write loop during loading
         model.setRowCount(0);
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
@@ -157,38 +187,31 @@ public class InventoryLogic implements ActionListener {
                 String name = parts[0];
                 String price = parts[1];
                 String stock = parts[2];
-                model.addRow(new Object[]{name, price, stock, ""});
+                String imgPath = parts.length > 3 ? parts[3] : "imgs/default.jpg";
+                model.addRow(new Object[]{name, price, stock, imgPath, ""});
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * Saves the current JTable inventory data into the CSV file.
-     */
     public void saveInventory() {
         File file = new File(FILE_PATH);
         try (PrintWriter pw = new PrintWriter(new FileWriter(file))) {
-            pw.println("product_name,price,stock_quantity");
+            pw.println("product_name,price,stock_quantity,image_path");
             DefaultTableModel model = gui.getTableModel();
             for (int i = 0; i < model.getRowCount(); i++) {
                 String name = (String) model.getValueAt(i, 0);
                 String price = (String) model.getValueAt(i, 1);
                 String stock = (String) model.getValueAt(i, 2);
-                pw.printf("%s,%s,%s\n", name, price, stock);
+                String imgPath = (String) model.getValueAt(i, 3);
+                pw.printf("%s,%s,%s,%s\n", name, price, stock, imgPath);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * Helper to get the current stock level of a given product.
-     *
-     * @param productName the name of the product
-     * @return the current stock quantity, or 0 if not found
-     */
     public int getStock(String productName) {
         DefaultTableModel model = gui.getTableModel();
         for (int i = 0; i < model.getRowCount(); i++) {
@@ -205,10 +228,6 @@ public class InventoryLogic implements ActionListener {
         return 0;
     }
 
-    /**
-     * Helper to verify if two product names match case-insensitively and
-     * handle common spelling differences such as "Capuccino" vs "Cappuccino".
-     */
     private boolean isSameProduct(String name1, String name2) {
         if (name1 == null || name2 == null) return false;
         String n1 = name1.trim().toLowerCase();

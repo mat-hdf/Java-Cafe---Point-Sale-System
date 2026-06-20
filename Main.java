@@ -14,40 +14,45 @@ public class Main {
     public static void main(String[] args) {
         
         SwingUtilities.invokeLater(() -> {
-            // Cria a janela principal única do sistema
+            // Creates the single main window of the system
             JFrame mainFrame = new JFrame("Java Cafe - Management System");
             mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             mainFrame.setSize(1000, 800);
 
-            // Cria o componente das abas
+            // Creates the tabbed pane component
             JTabbedPane tabbedPane = new JTabbedPane();
 
-            // Cria a tela de pedidos
+            // Creates the order screen and its controller
             OrderGUI orderScreen = new OrderGUI();
             OrderLogic logic = new OrderLogic(orderScreen);
             orderScreen.setController(logic);
 
-            // Cria a tela de inventário
+            // Creates the inventory screen and its controller
             InventoryGUI inventoryScreen = new InventoryGUI();
             InventoryLogic invLogic = new InventoryLogic(inventoryScreen);
             inventoryScreen.setController(invLogic);
             
-            // Conecta o controle do inventário com o controle do pedido
+            // Connects the inventory logic to the order logic (for stock checks)
             logic.setInventoryLogic(invLogic);
             
-            // Cria a tela de relatórios de vendas
+            // Creates the sales report screen and links it
             SalesReportGUI reportScreen = new SalesReportGUI();
             logic.setReportScreen(reportScreen);
 
-            // Adiciona cada painel como uma aba diferente
+            // === THE SYNCHRONIZATION LINE ===
+            // This binds the order interface to the inventory data. 
+            // Without it, the dynamically generated image buttons would never appear.
+            invLogic.bindOrderSystem(orderScreen, logic);
+
+            // Adds each panel as a different tab
             tabbedPane.addTab("Orders", orderScreen);
             tabbedPane.addTab("Inventory", inventoryScreen);
             tabbedPane.addTab("Sales Reports", reportScreen);
 
-            // Adiciona o painel de abas à janela principal
+            // Adds the tabbed panel to the main window
             mainFrame.add(tabbedPane);
             
-            // Centraliza e exibe a janela
+            // Centers and displays the window
             mainFrame.setLocationRelativeTo(null);
             mainFrame.setVisible(true);
         });

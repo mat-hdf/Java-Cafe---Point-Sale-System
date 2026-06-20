@@ -1,9 +1,10 @@
-product_name,price,stock_quantity
-Pie,4.50,10
-Cake,5.00,3
-Coffee,2.50,40
-Tea,2.50,20
-Water,1.00,50
-Cappuccino,2.50,23
-Cookie,1.50,20
-Cookie,1.50,20
+product_name,price,stock_quantity,image_path
+Pie,4.50,9,imgs/pie.jpg
+Cake,5.00,3,imgs/cake.jpeg
+Coffee,2.50,40,imgs/coffee.jpg
+Tea,2.50,20,imgs/tea.jpg
+Water,1.00,50,imgs/commercial-pet-bottle.jpg
+Cappuccino,2.50,23,imgs/capuccino.jpg
+nao precisa ter imagem,1.00,123,imgs/default.jpg
+mas se tiver,1.00,123,imgs/default.jpg
+é copiada pra pasta /imgs,1.00,123,imgs/gato.png

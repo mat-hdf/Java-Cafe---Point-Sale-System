@@ -43,6 +43,7 @@ O projeto adota o padrão de arquitetura **MVC (Model-View-Controller)** para se
 
 ```
 ├── Main.java                      # Ponto de entrada do sistema
+├── CafeTheme.java                 # Gerenciador central de temas, cores e fontes customizadas
 ├── OrderGUI.java                  # Painel visual do carrinho e pedidos
 ├── OrderLogic.java                # Controlador lógico dos pedidos
 ├── InventoryGUI.java              # Painel visual da tabela de estoque

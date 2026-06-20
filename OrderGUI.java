@@ -24,42 +24,64 @@ public class OrderGUI extends JPanel
     public OrderGUI()
     {
         // window settings
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(15, 15));
+        setBackground(CafeTheme.OFF_WHITE);
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         // top of page, welcome msg
         welcomePanel = new JPanel(); 
-        welcomeLabel = new JLabel("Welcome to Java Cafe!");
-        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        welcomePanel.setBackground(CafeTheme.OFF_WHITE);
+        welcomeLabel = new JLabel("☕ Java Café");
+        welcomeLabel.setFont(CafeTheme.TITLE_FONT);
+        welcomeLabel.setForeground(CafeTheme.DARK_ROAST);
         welcomePanel.add(welcomeLabel);
+        welcomePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
         add(welcomePanel, BorderLayout.NORTH);
 
         // settings for the store menu base container
         storePanel = new JPanel();
-        storePanel.setBorder(BorderFactory.createTitledBorder("Menu"));
-        storePanel.setLayout(new BorderLayout());
+        storePanel.setBackground(CafeTheme.OFF_WHITE);
+        storePanel.setBorder(CafeTheme.createCafeTitledBorder("Menu Card"));
+        storePanel.setLayout(new BorderLayout(10, 10));
 
         textPanel = new JPanel();
+        textPanel.setBackground(CafeTheme.OFF_WHITE);
         textPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        text = new JLabel("Please, place your order:");
-        text.setFont(new Font("Arial", Font.BOLD, 18));
+        text = new JLabel("Select items to add to order:");
+        text.setFont(CafeTheme.BOLD_FONT);
+        text.setForeground(CafeTheme.TEXT_MUTED);
         textPanel.add(text);
         storePanel.add(textPanel, BorderLayout.NORTH);
 
         obsPanel = new JPanel();
-        obsPanel.setLayout(new BorderLayout());
-        obsLabel = new JLabel("Observations: ");
-        obs = new JTextArea(5, 20);
+        obsPanel.setBackground(CafeTheme.OFF_WHITE);
+        obsPanel.setLayout(new BorderLayout(5, 5));
+        obsLabel = new JLabel("Special Instructions / Observations:");
+        obsLabel.setFont(CafeTheme.BOLD_FONT);
+        obsLabel.setForeground(CafeTheme.DARK_ROAST);
+        
+        obs = new JTextArea(4, 20);
         obs.setLineWrap(true);    
         obs.setWrapStyleWord(true);
+        obs.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+        
         obsScrollPane = new JScrollPane(obs);
+        CafeTheme.styleScrollPane(obsScrollPane);
         obsPanel.add(obsLabel, BorderLayout.NORTH);
         obsPanel.add(obsScrollPane, BorderLayout.CENTER);
+        obsPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
         // Layout switches to a dynamic grid (flexible row mapping count, 2 item columns)
         menuPanel = new JPanel();
-        menuPanel.setLayout(new GridLayout(0, 2, 10, 10));
+        menuPanel.setBackground(CafeTheme.OFF_WHITE);
+        menuPanel.setLayout(new GridLayout(0, 2, 12, 12));
 
-        storePanel.add(menuPanel, BorderLayout.CENTER);
+        // Wrap menu panel in scroll pane to prevent any clipping/cutoff
+        JScrollPane menuScroll = new JScrollPane(menuPanel);
+        CafeTheme.styleScrollPane(menuScroll);
+        menuScroll.setBorder(BorderFactory.createEmptyBorder()); // clean seamless look
+
+        storePanel.add(menuScroll, BorderLayout.CENTER);
         storePanel.add(obsPanel, BorderLayout.SOUTH);
         add(storePanel, BorderLayout.CENTER);
 
@@ -75,26 +97,48 @@ public class OrderGUI extends JPanel
             }
         };
         orderTable = new JTable(tableModel);
-        orderTable.getTableHeader().setReorderingAllowed(false);    // blocks reordering table columns
+        CafeTheme.styleTable(orderTable);
+        
         orderScroll = new JScrollPane(orderTable);
-        orderScroll.setPreferredSize(new Dimension(250, 0));
+        CafeTheme.styleScrollPane(orderScroll);
+        orderScroll.setPreferredSize(new Dimension(280, 0));
 
         // setting top price panel structure
         totalPanel = new JPanel();
-        totalPanel.setLayout(new GridLayout(3, 2, 5, 5));
-        orderSubTotal = new JLabel("Subtotal: $ ");
-        orderSubTotal.setFont(new Font("Arial", Font.BOLD, 16));
+        totalPanel.setBackground(CafeTheme.OFF_WHITE);
+        totalPanel.setLayout(new GridLayout(3, 2, 5, 8));
+        totalPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 1, 0, CafeTheme.CREAM_DARK),
+            BorderFactory.createEmptyBorder(5, 5, 12, 5)
+        ));
+
+        orderSubTotal = new JLabel("Subtotal: $");
+        orderSubTotal.setFont(CafeTheme.REGULAR_FONT);
+        orderSubTotal.setForeground(CafeTheme.TEXT_MUTED);
+        
         subValue = new JLabel("0.00");
-        subValue.setFont(new Font("Arial", Font.BOLD, 16));
-        orderTax = new JLabel("Tax: $ ");
-        orderTax.setFont(new Font("Arial", Font.BOLD, 16));
+        subValue.setFont(CafeTheme.BOLD_FONT);
+        subValue.setForeground(CafeTheme.DARK_ROAST);
+        subValue.setHorizontalAlignment(SwingConstants.RIGHT);
+        
+        orderTax = new JLabel("Tax (10%): $");
+        orderTax.setFont(CafeTheme.REGULAR_FONT);
+        orderTax.setForeground(CafeTheme.TEXT_MUTED);
+        
         taxValue = new JLabel("0.00");
-        taxValue.setFont(new Font("Arial", Font.BOLD, 16));
-        orderTotal = new JLabel("Total: $ ");
-        orderTotal.setFont(new Font("Arial", Font.BOLD, 16));
+        taxValue.setFont(CafeTheme.BOLD_FONT);
+        taxValue.setForeground(CafeTheme.DARK_ROAST);
+        taxValue.setHorizontalAlignment(SwingConstants.RIGHT);
+        
+        orderTotal = new JLabel("Total: $");
+        orderTotal.setFont(CafeTheme.SUBTITLE_FONT);
+        orderTotal.setForeground(CafeTheme.DARK_ROAST);
+        
         orderValue = new JLabel("0.00");
-        orderValue.setFont(new Font("Arial", Font.BOLD, 16));
-        orderValue.setForeground(new Color(0, 150, 0));
+        orderValue.setFont(new Font("SansSerif", Font.BOLD, 18));
+        orderValue.setForeground(CafeTheme.CARAMEL);
+        orderValue.setHorizontalAlignment(SwingConstants.RIGHT);
+
         totalPanel.add(orderSubTotal);
         totalPanel.add(subValue);
         totalPanel.add(orderTax);
@@ -103,19 +147,26 @@ public class OrderGUI extends JPanel
         totalPanel.add(orderValue);
 
         // setting order execution panel
-        cancelButton = new JButton("Cancel Order");
-        orderButton = new JButton("Place Order");
-        removeButton = new JButton("Remove Item");
-        orderPanel  = new JPanel(); // panel for all order related components
-        finalizeOrder = new JPanel();
+        cancelButton = new CafeTheme.CafeButton("Cancel Order", CafeTheme.CafeButton.Variant.DANGER);
+        orderButton = new CafeTheme.CafeButton("Place Order", CafeTheme.CafeButton.Variant.SUCCESS);
+        removeButton = new CafeTheme.CafeButton("Remove Item", CafeTheme.CafeButton.Variant.SECONDARY);
         
-        finalizeOrder.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        cancelButton.setPreferredSize(new Dimension(110, 36));
+        orderButton.setPreferredSize(new Dimension(110, 36));
+        removeButton.setPreferredSize(new Dimension(110, 36));
+
+        orderPanel  = new JPanel(); // panel for all order related components
+        orderPanel.setBackground(CafeTheme.OFF_WHITE);
+        finalizeOrder = new JPanel();
+        finalizeOrder.setBackground(CafeTheme.OFF_WHITE);
+        
+        finalizeOrder.setLayout(new FlowLayout(FlowLayout.RIGHT, 8, 8));
         finalizeOrder.add(removeButton);
         finalizeOrder.add(cancelButton);
         finalizeOrder.add(orderButton);
 
-        orderPanel.setLayout(new BorderLayout());
-        orderPanel.setBorder(BorderFactory.createTitledBorder("Your Order"));
+        orderPanel.setLayout(new BorderLayout(10, 10));
+        orderPanel.setBorder(CafeTheme.createCafeTitledBorder("Your Order"));
         orderPanel.add(orderScroll, BorderLayout.CENTER);
         orderPanel.add(finalizeOrder, BorderLayout.SOUTH);
         orderPanel.add(totalPanel, BorderLayout.NORTH);
@@ -134,7 +185,7 @@ public class OrderGUI extends JPanel
             String itemName = (String) inventoryModel.getValueAt(i, 0);
             String imagePath = (String) inventoryModel.getValueAt(i, 3);
             
-            JButton itemButton = new JButton(itemName);
+            JButton itemButton = new CafeTheme.CafeButton(itemName, CafeTheme.CafeButton.Variant.PRIMARY);
             itemButton.setActionCommand(itemName);
             itemButton.addActionListener(logic);
             
@@ -167,15 +218,35 @@ public class OrderGUI extends JPanel
      */
     private JPanel createItemWrapper(JButton button, String imagePath) 
     {
-        ImageIcon icon = createResizedIcon(imagePath, 80, 80);  // resizes img
-        JLabel iconLabel = new JLabel(icon);    // creates new JLabel with resized img
-        button.setPreferredSize(new Dimension(110, 40)); // button size
+        ImageIcon icon = createResizedIcon(imagePath, 75, 75);  // resizes img to 75x75
+        JLabel iconLabel = new JLabel(icon);
+        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
         
-        JPanel wrapperPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10)); // creates a jpanel with img and button
-        wrapperPanel.add(iconLabel);
-        wrapperPanel.add(button); 
+        button.setPreferredSize(new Dimension(125, 38)); // button size
         
-        return wrapperPanel;
+        // A sleek, rounded menu card panel with GridBagLayout for side-by-side alignment
+        JPanel itemCard = new JPanel(new GridBagLayout());
+        itemCard.setBackground(Color.WHITE);
+        itemCard.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(CafeTheme.CREAM_DARK, 1, true),
+            BorderFactory.createEmptyBorder(8, 12, 8, 12)
+        ));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0.3;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.CENTER;
+        itemCard.add(iconLabel, gbc);
+        
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.NONE;
+        itemCard.add(button, gbc);
+        
+        return itemCard;
     }
 
     /**
@@ -195,15 +266,39 @@ public class OrderGUI extends JPanel
             if (path != null && imgFile.exists() && !imgFile.isDirectory()) {
                 originalIcon = new ImageIcon(path);
             } else {
-                // Return a visual gray block placeholder instead of transparent nothingness if image is missing
-                java.awt.image.BufferedImage placeholder = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
-                Graphics2D g = placeholder.createGraphics();
-                g.setColor(Color.LIGHT_GRAY);
-                g.fillRect(0, 0, width, height);
-                g.setColor(Color.DARK_GRAY);
-                g.setFont(new Font("Arial", Font.BOLD, 12));
-                g.drawString("No Img", 20, height / 2 + 5);
-                g.dispose();
+                // Return a beautiful vector coffee cup placeholder instead of a gray block
+                java.awt.image.BufferedImage placeholder = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2 = placeholder.createGraphics();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Soft cream background
+                g2.setColor(CafeTheme.CREAM_LIGHT);
+                g2.fillRoundRect(0, 0, width, height, 16, 16);
+                g2.setColor(CafeTheme.CREAM_DARK);
+                g2.drawRoundRect(0, 0, width - 1, height - 1, 16, 16);
+                
+                // Soft orange/caramel coffee cup icon
+                g2.setColor(CafeTheme.CARAMEL);
+                // Cup body
+                int cupW = 34;
+                int cupH = 26;
+                int cupX = (width - cupW) / 2 - 3;
+                int cupY = (height - cupH) / 2 + 3;
+                g2.fillRoundRect(cupX, cupY, cupW, cupH, 8, 8);
+                
+                // Cup handle
+                g2.setStroke(new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g2.drawArc(cupX + cupW - 6, cupY + 4, 12, 14, 270, 180);
+                
+                // Saucer/Plate
+                g2.drawLine(cupX - 6, cupY + cupH, cupX + cupW + 6, cupY + cupH);
+                
+                // Steam waves
+                g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g2.drawArc(cupX + 8, cupY - 10, 6, 8, 90, 180);
+                g2.drawArc(cupX + 16, cupY - 10, 6, 8, 270, 180);
+                
+                g2.dispose();
                 return new ImageIcon(placeholder);
             }
             Image img = originalIcon.getImage();

@@ -20,7 +20,9 @@ public class InventoryGUI extends JPanel {
 
     public InventoryGUI() {
         // Main panel settings
-        setLayout(new BorderLayout(10,10));
+        setLayout(new BorderLayout(15, 15));
+        setBackground(CafeTheme.OFF_WHITE);
+        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         // Table Configuration (Data columns + 1 Image Path Column + 1 Delete Column)
         String[] columnNames = {"Product Name", "Price ($)", "Stock Quantity", "Image Path", "Delete"};
@@ -79,17 +81,28 @@ public class InventoryGUI extends JPanel {
         };
         
         inventoryTable = new JTable(tableModel);
+        CafeTheme.styleTable(inventoryTable);
         
-        // Makes the font of the items in the table larger and crisper
-        inventoryTable.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        inventoryTable.setRowHeight(30);
-        
-        // Renders column 4 as a button with a red "X" (\u2716)
-        inventoryTable.getColumnModel().getColumn(4).setCellRenderer(new ButtonRenderer("\u2716 Del", new Color(220, 20, 60)));  
+        // Renders column 4 as a beautiful, centered terracotta button
+        inventoryTable.getColumnModel().getColumn(4).setCellRenderer(new ButtonRenderer());  
         inventoryTable.getColumnModel().getColumn(4).setMaxWidth(80);
 
+        // Change mouse cursor to hand when hovering over the delete column (col 4)
+        inventoryTable.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(java.awt.event.MouseEvent e) {
+                int col = inventoryTable.columnAtPoint(e.getPoint());
+                if (col == 4) {
+                    inventoryTable.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                } else {
+                    inventoryTable.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+            }
+        });
+
         tableScroll = new JScrollPane(inventoryTable);
-        tableScroll.setBorder(BorderFactory.createTitledBorder("Current Inventory"));
+        CafeTheme.styleScrollPane(tableScroll);
+        tableScroll.setBorder(CafeTheme.createCafeTitledBorder("Current Inventory"));
         
         // Adding some sample data (The last empty string "" reserves space for the button)
         tableModel.addRow(new Object[]{"Pie", "4.50", "10", "imgs/pie.jpg", ""});
@@ -102,80 +115,130 @@ public class InventoryGUI extends JPanel {
         add(tableScroll, BorderLayout.CENTER);
 
         // Form Panel for data entry (Exclusive for ADDING new products)
-        formPanel = new JPanel(new GridLayout(2, 4, 10, 5));
-        formPanel.setBorder(BorderFactory.createTitledBorder("Add New Product"));
+        formPanel = new JPanel(new GridLayout(2, 4, 12, 6));
+        formPanel.setBackground(CafeTheme.OFF_WHITE);
+        formPanel.setBorder(CafeTheme.createCafeTitledBorder("Add New Product"));
         
-        formPanel.add(new JLabel("Product Name:"));
-        formPanel.add(new JLabel("Price ($):"));
-        formPanel.add(new JLabel("Stock Quantity:"));
+        JLabel nameLbl = new JLabel("Product Name:");
+        nameLbl.setFont(CafeTheme.BOLD_FONT);
+        nameLbl.setForeground(CafeTheme.DARK_ROAST);
         
-        // Adds a visual cue for supported formats right on the form label
-        formPanel.add(new JLabel("Product Image (JPG/PNG):"));
+        JLabel priceLbl = new JLabel("Price ($):");
+        priceLbl.setFont(CafeTheme.BOLD_FONT);
+        priceLbl.setForeground(CafeTheme.DARK_ROAST);
+        
+        JLabel stockLbl = new JLabel("Stock Quantity:");
+        stockLbl.setFont(CafeTheme.BOLD_FONT);
+        stockLbl.setForeground(CafeTheme.DARK_ROAST);
+        
+        JLabel imgLbl = new JLabel("Product Image:");
+        imgLbl.setFont(CafeTheme.BOLD_FONT);
+        imgLbl.setForeground(CafeTheme.DARK_ROAST);
+
+        formPanel.add(nameLbl);
+        formPanel.add(priceLbl);
+        formPanel.add(stockLbl);
+        formPanel.add(imgLbl);
         
         nameField = new JTextField();
-        priceField = new JTextField();
-        stockField = new JTextField();
+        nameField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(CafeTheme.CREAM_DARK, 1, true),
+            BorderFactory.createEmptyBorder(6, 10, 6, 10)
+        ));
         
-        // Setup image chooser sub-panel with automatic folder copy deployment logic
-        JPanel imageChooserPanel = new JPanel(new BorderLayout(5, 0));
+        priceField = new JTextField();
+        priceField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(CafeTheme.CREAM_DARK, 1, true),
+            BorderFactory.createEmptyBorder(6, 10, 6, 10)
+        ));
+        
+        stockField = new JTextField();
+        stockField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(CafeTheme.CREAM_DARK, 1, true),
+            BorderFactory.createEmptyBorder(6, 10, 6, 10)
+        ));
+        // Setup image path field as a hidden model component
         imagePathField = new JTextField();
-        imagePathField.setEditable(false);
-        browseImageButton = new JButton("...");
+        
+        browseImageButton = new CafeTheme.CafeButton("Choose Image", CafeTheme.CafeButton.Variant.SECONDARY);
         browseImageButton.setToolTipText("Select a valid image file (.jpg, .jpeg, .png, .gif)");
         
-        // Launch file chooser, apply filters, and copy target file locally
+        // DocumentListener on imagePathField to automatically update button text when changed/cleared
+        imagePathField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            private void update() {
+                String path = imagePathField.getText().trim();
+                if (path.isEmpty()) {
+                    browseImageButton.setText("Choose Image");
+                } else {
+                    File f = new File(path);
+                    browseImageButton.setText("✓ " + f.getName());
+                }
+            }
+            @Override public void insertUpdate(javax.swing.event.DocumentEvent e) { update(); }
+            @Override public void removeUpdate(javax.swing.event.DocumentEvent e) { update(); }
+            @Override public void changedUpdate(javax.swing.event.DocumentEvent e) { update(); }
+        });
+        
+        // Action to browse images
         browseImageButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Select a Product Image");
             
-            // Restrict file selection to supported image extensions only
             FileNameExtensionFilter imageFilter = new FileNameExtensionFilter(
                 "Supported Images (JPG, JPEG, PNG, GIF)", "jpg", "jpeg", "png", "gif"
             );
             fileChooser.setFileFilter(imageFilter);
-            fileChooser.setAcceptAllFileFilterUsed(false); // Disables the "All files" option
+            fileChooser.setAcceptAllFileFilterUsed(false);
             
-            int result = fileChooser.showOpenDialog(this);
+            int result = fileChooser.showOpenDialog(InventoryGUI.this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File sourceFile = fileChooser.getSelectedFile();
                 File targetDir = new File("imgs");
                 
-                // Create the directory if it does not exist
                 if (!targetDir.exists()) {
                     targetDir.mkdirs();
                 }
                 
                 File targetFile = new File(targetDir, sourceFile.getName());
                 try {
-                    // Copy file to local project directory replacing existing files with the same name
                     java.nio.file.Files.copy(sourceFile.toPath(), targetFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                    // Update field text to relative local structure path
                     imagePathField.setText("imgs/" + sourceFile.getName());
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Error copying image to local folder: " + ex.getMessage(), "File Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(InventoryGUI.this, "Error copying image to local folder: " + ex.getMessage(), "File Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
         
-        imageChooserPanel.add(imagePathField, BorderLayout.CENTER);
-        imageChooserPanel.add(browseImageButton, BorderLayout.EAST);
-        
         formPanel.add(nameField);
         formPanel.add(priceField);
         formPanel.add(stockField);
-        formPanel.add(imageChooserPanel);
-
+        formPanel.add(browseImageButton);
         // Action Buttons Panel
         actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
-        addButton = new JButton("Add Product"); // Button to add a new product to the inventory
-        clearSelectionButton = new JButton("Clear Selection"); // Button to clear the fields
-        checkStockButton = new JButton("Check Low Stock");  // Button to check for products with low stock
+        actionPanel.setOpaque(false);
+        addButton = new CafeTheme.CafeButton("Add Product", CafeTheme.CafeButton.Variant.PRIMARY);
+        clearSelectionButton = new CafeTheme.CafeButton("Clear Selection", CafeTheme.CafeButton.Variant.SECONDARY);
+        checkStockButton = new CafeTheme.CafeButton("Check Low Stock", CafeTheme.CafeButton.Variant.SECONDARY);
+
+        addButton.setPreferredSize(new Dimension(130, 36));
+        clearSelectionButton.setPreferredSize(new Dimension(130, 36));
+        checkStockButton.setPreferredSize(new Dimension(150, 36));
 
         // Low Stock Threshold Configuration
         SpinnerModel spinnerModel = new SpinnerNumberModel(10, 1, 100, 1);
         thresholdSpinner = new JSpinner(spinnerModel);
-        JPanel thresholdContainer = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        thresholdContainer.add(new JLabel("Low Stock Threshold:"));
+        thresholdSpinner.setBorder(BorderFactory.createLineBorder(CafeTheme.CREAM_DARK, 1, true));
+        JComponent editor = thresholdSpinner.getEditor();
+        if (editor instanceof JSpinner.DefaultEditor) {
+            ((JSpinner.DefaultEditor) editor).getTextField().setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+        }
+        
+        JPanel thresholdContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        thresholdContainer.setOpaque(false);
+        JLabel thresholdLabel = new JLabel("Low Stock Threshold:");
+        thresholdLabel.setFont(CafeTheme.BOLD_FONT);
+        thresholdLabel.setForeground(CafeTheme.TEXT_MUTED);
+        thresholdContainer.add(thresholdLabel);
         thresholdContainer.add(thresholdSpinner);
 
         actionPanel.add(addButton);
@@ -193,6 +256,7 @@ public class InventoryGUI extends JPanel {
 
         // Grouping the form and buttons at the bottom (SOUTH)
         mainBottomPanel = new JPanel(new BorderLayout());
+        mainBottomPanel.setOpaque(false);
         mainBottomPanel.add(thresholdContainer, BorderLayout.NORTH); 
         mainBottomPanel.add(formPanel, BorderLayout.CENTER);
         mainBottomPanel.add(actionPanel, BorderLayout.SOUTH);
@@ -229,22 +293,50 @@ public class InventoryGUI extends JPanel {
     public JTextField getImagePathField() { return imagePathField; }
     public JSpinner getThresholdSpinner() { return thresholdSpinner; } 
 
-    // --- Inner class that draws the button in the cell ---
-    class ButtonRenderer extends JButton implements TableCellRenderer {
-        public ButtonRenderer(String text, Color bgColor) {
-            setText(text);
-            setBackground(bgColor);
-            setForeground(Color.WHITE);
-            setFocusPainted(false);
+    // --- Inner class that draws a rounded terracotta button in the table cell ---
+    class ButtonRenderer extends JPanel implements TableCellRenderer {
+        private final Font buttonFont = new Font("SansSerif", Font.BOLD, 12);
+        private final int btnW = 28;
+        private final int btnH = 22;
+
+        public ButtonRenderer() {
             setOpaque(true);
-            
-            // SansSerif font in Bold size 14 ensures the "X" icon is crisp
-            setFont(new Font("SansSerif", Font.BOLD, 14));
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (isSelected) {
+                setBackground(table.getSelectionBackground());
+            } else {
+                setBackground(table.getBackground());
+            }
             return this;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            // Draw background rounded rectangle
+            g2.setColor(CafeTheme.DANGER_TERRACOTTA);
+            int btnX = (getWidth() - btnW) / 2;
+            int btnY = (getHeight() - btnH) / 2;
+            g2.fillRoundRect(btnX, btnY, btnW, btnH, 8, 8);
+            
+            // Draw the centered "✕" symbol
+            g2.setColor(Color.WHITE);
+            g2.setFont(buttonFont);
+            FontMetrics fm = g2.getFontMetrics(buttonFont);
+            String text = "✕";
+            int textWidth = fm.stringWidth(text);
+            int textHeight = fm.getAscent() + fm.getDescent();
+            int tx = btnX + (btnW - textWidth) / 2;
+            int ty = btnY + (btnH - textHeight) / 2 + fm.getAscent() - 1; // Visually centered
+            
+            g2.drawString(text, tx, ty);
+            g2.dispose();
         }
     }
 }

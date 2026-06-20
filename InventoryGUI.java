@@ -22,7 +22,7 @@ public class InventoryGUI extends JPanel {
         // Main panel settings
         setLayout(new BorderLayout(10,10));
 
-        // 1. Table Configuration (Data columns + 1 Image Path Column + 1 Delete Column)
+        // Table Configuration (Data columns + 1 Image Path Column + 1 Delete Column)
         String[] columnNames = {"Product Name", "Price ($)", "Stock Quantity", "Image Path", "Delete"};
         
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -91,7 +91,7 @@ public class InventoryGUI extends JPanel {
         tableScroll = new JScrollPane(inventoryTable);
         tableScroll.setBorder(BorderFactory.createTitledBorder("Current Inventory"));
         
-        // Adding initial sample data containing default local paths
+        // Adding some sample data (The last empty string "" reserves space for the button)
         tableModel.addRow(new Object[]{"Pie", "4.50", "10", "imgs/pie.jpg", ""});
         tableModel.addRow(new Object[]{"Cake", "5.00", "8", "imgs/cake.jpeg", ""});
         tableModel.addRow(new Object[]{"Coffee", "2.50", "40", "imgs/coffee.JPG", ""});
@@ -101,7 +101,7 @@ public class InventoryGUI extends JPanel {
 
         add(tableScroll, BorderLayout.CENTER);
 
-        // Form Panel for data entry (Expanded to 4 columns to fit the Image path field)
+        // Form Panel for data entry (Exclusive for ADDING new products)
         formPanel = new JPanel(new GridLayout(2, 4, 10, 5));
         formPanel.setBorder(BorderFactory.createTitledBorder("Add New Product"));
         
@@ -167,9 +167,9 @@ public class InventoryGUI extends JPanel {
 
         // Action Buttons Panel
         actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
-        addButton = new JButton("Add Product"); 
-        clearSelectionButton = new JButton("Clear Selection"); 
-        checkStockButton = new JButton("Check Low Stock");  
+        addButton = new JButton("Add Product"); // Button to add a new product to the inventory
+        clearSelectionButton = new JButton("Clear Selection"); // Button to clear the fields
+        checkStockButton = new JButton("Check Low Stock");  // Button to check for products with low stock
 
         // Low Stock Threshold Configuration
         SpinnerModel spinnerModel = new SpinnerNumberModel(10, 1, 100, 1);
@@ -237,6 +237,8 @@ public class InventoryGUI extends JPanel {
             setForeground(Color.WHITE);
             setFocusPainted(false);
             setOpaque(true);
+            
+            // SansSerif font in Bold size 14 ensures the "X" icon is crisp
             setFont(new Font("SansSerif", Font.BOLD, 14));
         }
 

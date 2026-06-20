@@ -3,9 +3,13 @@ import java.io.File;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+/**
+ * Graphical User Interface for placing orders at Java Cafe.
+ * Contains the menu layout with dynamically generated buttons for items and the sidebar listing order details.
+ */
 public class OrderGUI extends JPanel
 {
-    // Component declarations
+    // component declarations
     private JPanel menuPanel, orderPanel, totalPanel, finalizeOrder, storePanel, obsPanel, welcomePanel, textPanel;
     private JButton orderButton, cancelButton, removeButton;
     private JScrollPane orderScroll, obsScrollPane;
@@ -14,18 +18,22 @@ public class OrderGUI extends JPanel
     private JLabel orderTotal, orderValue, obsLabel, welcomeLabel, text, orderSubTotal, subValue, orderTax, taxValue;
     private JTextArea obs;
 
+    /**
+     * Constructs a new OrderGUI layout, setting up panels, dynamic menus, and buttons.
+     */
     public OrderGUI()
     {
+        // window settings
         setLayout(new BorderLayout());
 
-        // Top of page, welcome msg
+        // top of page, welcome msg
         welcomePanel = new JPanel(); 
         welcomeLabel = new JLabel("Welcome to Java Cafe!");
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
         welcomePanel.add(welcomeLabel);
         add(welcomePanel, BorderLayout.NORTH);
 
-        // Settings for the store menu base container
+        // settings for the store menu base container
         storePanel = new JPanel();
         storePanel.setBorder(BorderFactory.createTitledBorder("Menu"));
         storePanel.setLayout(new BorderLayout());
@@ -55,7 +63,7 @@ public class OrderGUI extends JPanel
         storePanel.add(obsPanel, BorderLayout.SOUTH);
         add(storePanel, BorderLayout.CENTER);
 
-        // Settings for order listing through Jtable
+        // settings for order listing through Jtable
         String[] columnNames = {"Quantity", "Item", "Price ($)"};
 
         tableModel = new DefaultTableModel(columnNames, 0) 
@@ -63,15 +71,15 @@ public class OrderGUI extends JPanel
             @Override
             public boolean isCellEditable(int row, int column) 
             {
-                return false; 
+                return false; // blocks cell editing
             }
         };
         orderTable = new JTable(tableModel);
-        orderTable.getTableHeader().setReorderingAllowed(false);    
+        orderTable.getTableHeader().setReorderingAllowed(false);    // blocks reordering table columns
         orderScroll = new JScrollPane(orderTable);
         orderScroll.setPreferredSize(new Dimension(250, 0));
 
-        // Setting prices panel structure
+        // setting top price panel structure
         totalPanel = new JPanel();
         totalPanel.setLayout(new GridLayout(3, 2, 5, 5));
         orderSubTotal = new JLabel("Subtotal: $ ");
@@ -94,11 +102,11 @@ public class OrderGUI extends JPanel
         totalPanel.add(orderTotal);
         totalPanel.add(orderValue);
 
-        // Setting execution order panel
+        // setting order execution panel
         cancelButton = new JButton("Cancel Order");
         orderButton = new JButton("Place Order");
         removeButton = new JButton("Remove Item");
-        orderPanel  = new JPanel(); 
+        orderPanel  = new JPanel(); // panel for all order related components
         finalizeOrder = new JPanel();
         
         finalizeOrder.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -115,7 +123,9 @@ public class OrderGUI extends JPanel
     }
     
     /**
-     * Clears and builds menu blocks on demand pulling live components matching the inventory matrix
+     * Clears and rebuilds the menu layout dynamically based on the current inventory.
+     * * @param inventoryModel the table model pulling live components matching the inventory matrix
+     * @param logic          the OrderLogic controller handling actions
      */
     public void refreshMenu(DefaultTableModel inventoryModel, OrderLogic logic) {
         menuPanel.removeAll();
@@ -135,20 +145,33 @@ public class OrderGUI extends JPanel
         menuPanel.repaint();
     }
 
+    /**
+     * Sets the controller logic for handling order-related button clicks.
+     *
+     * @param logic the OrderLogic controller instance
+     */
     public void setController(OrderLogic logic) 
     {
+        // adding listeners to sidebar buttons
         removeButton.addActionListener(logic);
         cancelButton.addActionListener(logic);
         orderButton.addActionListener(logic);
     }
 
+    /**
+     * Wraps a button with its corresponding resized item icon.
+     *
+     * @param button    the action button to wrap
+     * @param imagePath the filesystem path to the icon image
+     * @return the wrapped JPanel containing icon and button
+     */
     private JPanel createItemWrapper(JButton button, String imagePath) 
     {
-        ImageIcon icon = createResizedIcon(imagePath, 80, 80);  
-        JLabel iconLabel = new JLabel(icon);    
-        button.setPreferredSize(new Dimension(110, 40)); 
+        ImageIcon icon = createResizedIcon(imagePath, 80, 80);  // resizes img
+        JLabel iconLabel = new JLabel(icon);    // creates new JLabel with resized img
+        button.setPreferredSize(new Dimension(110, 40)); // button size
         
-        JPanel wrapperPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10)); 
+        JPanel wrapperPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10)); // creates a jpanel with img and button
         wrapperPanel.add(iconLabel);
         wrapperPanel.add(button); 
         
@@ -156,7 +179,13 @@ public class OrderGUI extends JPanel
     }
 
     /**
-     * Safe image builder module with a physical visible fallback text placeholder if files do not exist locally
+     * Resizes an image file to the target width and height to use as an icon.
+     * Implements a physical visible fallback text placeholder if files do not exist locally.
+     *
+     * @param path   the image file path
+     * @param width  the target width
+     * @param height the target height
+     * @return a resized ImageIcon or a fallback placeholder block
      */
     private ImageIcon createResizedIcon(String path, int width, int height) 
     {
@@ -178,17 +207,52 @@ public class OrderGUI extends JPanel
                 return new ImageIcon(placeholder);
             }
             Image img = originalIcon.getImage();
-            Image scaledImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH); 
-            return new ImageIcon(scaledImg);   
+            Image scaledImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH); // resizes it
+            return new ImageIcon(scaledImg);    // returns adjusted img
         } catch(Exception e) {
             return new ImageIcon(new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_ARGB));
         }
     }
 
+    /**
+     * Gets the table model listing order items.
+     *
+     * @return the JTable's DefaultTableModel
+     */
     public DefaultTableModel getTableModel() { return tableModel; }
+    
+    /**
+     * Gets the JTable representing the order items.
+     *
+     * @return the order JTable
+     */
     public JTable getOrderTable() { return orderTable; }
+    
+    /**
+     * Gets the label displaying the current order total value.
+     *
+     * @return the Jlabel representing the total order value
+     */
     public JLabel getOrderValueLabel() { return orderValue; }
+    
+    /**
+     * Gets the label displaying the current order subtotal value.
+     *
+     * @return the Jlabel representing the subtotal value
+     */
     public JLabel getSubLabel() { return subValue; }
+    
+    /**
+     * Gets the label displaying the current order tax value.
+     *
+     * @return the Jlabel representing the tax value
+     */
     public JLabel getTaxLabel() { return taxValue; }
+    
+    /**
+     * Gets the observation text area.
+     *
+     * @return the observation JTextArea
+     */
     public JTextArea getObsTextArea() { return obs; }
 }

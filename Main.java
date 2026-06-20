@@ -39,9 +39,7 @@ public class Main {
             SalesReportGUI reportScreen = new SalesReportGUI();
             logic.setReportScreen(reportScreen);
 
-            // === THE SYNCHRONIZATION LINE ===
-            // This binds the order interface to the inventory data. 
-            // Without it, the dynamically generated image buttons would never appear.
+            // Binds the order interface to the inventory data. 
             invLogic.bindOrderSystem(orderScreen, logic);
 
             // Adds each panel as a different tab

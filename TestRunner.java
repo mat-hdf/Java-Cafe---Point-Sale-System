@@ -1,8 +1,11 @@
 import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.table.DefaultTableModel;
@@ -17,21 +20,22 @@ public class TestRunner {
     private static int passedTests = 0;
 
     public static void main(String[] args) {
+        // Força o Locale americano para garantir que a formatação de decimais seja com ponto (.)
+        // Isso evita falhas de teste ao comparar Strings geradas pela UI (ex: "7.70" vs "7,70").
+        Locale.setDefault(Locale.US);
+
         System.out.println("=========================================");
         System.out.println("       RUNNING JAVA CAFE UNIT TESTS      ");
         System.out.println("=========================================");
 
-        // Backup existing sales.csv
-        File backupFile = new File("sales.csv.bak");
+        // Backup existing CSVs to isolate tests
+        File backupSales = new File("sales.csv.bak");
         File salesFile = new File("sales.csv");
-        boolean backedUp = false;
+        boolean salesBackedUp = backupFile(salesFile, backupSales);
 
-        if (salesFile.exists()) {
-            backedUp = salesFile.renameTo(backupFile);
-            if (!backedUp) {
-                System.err.println("Warning: Could not back up sales.csv. Tests might overwrite existing data.");
-            }
-        }
+        File backupInventory = new File("inventory.csv.bak");
+        File inventoryFile = new File("inventory.csv");
+        boolean inventoryBackedUp = backupFile(inventoryFile, backupInventory);
 
         try {
             // Run test suites
@@ -41,13 +45,9 @@ public class TestRunner {
             runTest("InventoryLogic Operations", TestRunner::testInventoryLogic);
 
         } finally {
-            // Restore backup
-            if (salesFile.exists()) {
-                salesFile.delete();
-            }
-            if (backedUp && backupFile.exists()) {
-                backupFile.renameTo(salesFile);
-            }
+            // Restore backups safely
+            restoreFile(salesFile, backupSales, salesBackedUp);
+            restoreFile(inventoryFile, backupInventory, inventoryBackedUp);
         }
 
         System.out.println("=========================================");
@@ -58,6 +58,27 @@ public class TestRunner {
             System.exit(1);
         } else {
             System.exit(0);
+        }
+    }
+
+    // Métodos auxiliares para lidar com o File I/O do Mocking
+    private static boolean backupFile(File original, File backup) {
+        if (original.exists()) {
+            boolean success = original.renameTo(backup);
+            if (!success) {
+                System.err.println("Warning: Could not back up " + original.getName() + " - Tests might overwrite data.");
+            }
+            return success;
+        }
+        return false;
+    }
+
+    private static void restoreFile(File original, File backup, boolean wasBackedUp) {
+        if (original.exists()) {
+            original.delete();
+        }
+        if (wasBackedUp && backup.exists()) {
+            backup.renameTo(original);
         }
     }
 
@@ -110,34 +131,43 @@ public class TestRunner {
             salesFile.delete();
         }
 
-        // We write mock transactions directly using the persistence framework mock generation or manual save
         List<SalesPersistence.SaleItem> items1 = new ArrayList<>();
         items1.add(new SalesPersistence.SaleItem("Pie", 2, 4.50)); // $9.00
         SalesPersistence.saveSale(items1); // Saved now (Today)
 
-        // Instantiate components
         SalesReportGUI gui = new SalesReportGUI();
 
         // Retrieve private fields for assertions using reflection
         JLabel revenueLabel = getPrivateField(gui, "revenueValueLabel");
         JLabel transactionsLabel = getPrivateField(gui, "transactionsValueLabel");
 
-        // Verify "Today" (default selection or selected manually)
         gui.getPeriodComboBox().setSelectedItem("Today");
         assertEqual("$ 9.00", revenueLabel.getText(), "Today revenue should be $ 9.00");
         assertEqual("1", transactionsLabel.getText(), "Today transactions count should be 1");
     }
 
     private static void testOrderLogic() throws Exception {
+        // Cria um inventory.csv FALSO para não depender de estado externo do sistema real
+        File invFile = new File("inventory.csv");
+        try (PrintWriter pw = new PrintWriter(new FileWriter(invFile))) {
+            // Assume o formato simples (ajuste as vírgulas conforme sua classe InventoryLogic espera)
+            pw.println("product_name,price,stock_quantity,image_path");
+            pw.println("Pie,4.50,9,imgs/pie.jpg");
+            pw.println("Coffee,2.50,40,imgs/coffee.jpg");
+        }
+
         OrderGUI gui = new OrderGUI();
         OrderLogic logic = new OrderLogic(gui);
         gui.setController(logic);
+
+        InventoryGUI invGui = new InventoryGUI();
+        InventoryLogic invLogic = new InventoryLogic(invGui);
+        logic.setInventoryLogic(invLogic);
 
         // Simulate button clicks
         DefaultTableModel model = gui.getTableModel();
         assertEqual(0, model.getRowCount(), "Table should start empty");
 
-        // Use reflection or invoke ActionEvents directly on controller
         logic.actionPerformed(new java.awt.event.ActionEvent(gui, 0, "Pie"));
         assertEqual(1, model.getRowCount(), "Table should contain 1 item after adding Pie");
         assertEqual("Pie", model.getValueAt(0, 1), "Item added should be Pie");
@@ -164,7 +194,7 @@ public class TestRunner {
 
         // Populate fields to simulate adding product
         gui.getNameField().setText("Cookie");
-        gui.getPriceField().setText("1.50");
+        gui.getPriceField().setText("1.50"); // Com Locale.US já forçado na main, não vai disparar exceção
         gui.getStockField().setText("20");
 
         logic.actionPerformed(new java.awt.event.ActionEvent(gui, 0, "Add Product"));
@@ -179,12 +209,12 @@ public class TestRunner {
     private static void assertEqual(Object expected, Object actual, String message) {
         if (expected == null && actual == null) return;
         if (expected != null && expected.equals(actual)) return;
-        throw new AssertionError(message + " [Expected: " + expected + ", Actual: " + actual + "]");
+        throw new AssertionError(message + " \n[Expected: " + expected + "]\n[Actual: " + actual + "]");
     }
 
     private static void assertEqual(double expected, double actual, String message) {
         if (Math.abs(expected - actual) < 0.001) return;
-        throw new AssertionError(message + " [Expected: " + expected + ", Actual: " + actual + "]");
+        throw new AssertionError(message + " \n[Expected: " + expected + "]\n[Actual: " + actual + "]");
     }
 
     @SuppressWarnings("unchecked")
